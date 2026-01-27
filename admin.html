@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - CBFL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2ecc71;
+            --dark-bg: #1e272e;
+            --card-bg: #2f3640;
+            --text-light: #f5f6fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .admin-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid #444;
+        }
+
+        h2 {
+            font-family: 'Permanent Marker', cursive;
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            text-shadow: 2px 2px 0px #000;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            color: #bdc3c7;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: #1e272e;
+            color: white;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .row > div { flex: 1; }
+
+        .vitoria-box {
+            margin-top: 20px;
+            background: rgba(46, 204, 113, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px dashed var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .vitoria-box input { width: auto; cursor: pointer; }
+
+        button {
+            width: 100%;
+            background: var(--primary-color);
+            color: #1e272e;
+            border: none;
+            padding: 15px;
+            margin-top: 30px;
+            border-radius: 8px;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        button:hover {
+            background: #27ae60;
+            transform: scale(1.02);
+        }
+
+        button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+        }
+
+        .status-msg {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-card">
+    <h2>Lançar Pontos</h2>
+    <form id="form-admin">
+        <label>MC participante</label>
+        <select id="mc_nome" required>
+            <option value="P.A">P.A</option>
+            <option value="Markito">Markito</option>
+            <option value="BabyBala">BabyBala</option>
+            <option value="South">South</option>
+            <option value="Mineirim">Mineirim</option>
+            <option value="Gorjones">Gorjones</option>
+        </select>
+
+        <label>Batalha (Edição)</label>
+        <select id="batalha_id" required>
+            <option value="001">Sangue na 7</option>
+            <option value="002">Batalha Nova Era</option>
+            <option value="003">Coalizão 016</option>
+            <option value="004">Batalha do Pico</option>
+            <option value="005">Batalha do Bença</option>
+            <option value="006">Batalha do Educa</option>
+            <option value="007">Batalha da ZN</option>
+            <option value="008">Batalha UBS</option>
+        </select>
+
+        <div class="row">
+            <div>
+                <label>Pontos</label>
+                <input type="number" id="pontos" value="0" required>
+            </div>
+            <div>
+                <label>Twolalas</label>
+                <input type="number" id="twolalas" value="0" required>
+            </div>
+        </div>
+
+        <label>Folhinhas</label>
+        <input type="number" id="folhinhas" value="0" required>
+
+        <label class="vitoria-box">
+            <input type="checkbox" id="vitoria">
+            <span>Este MC foi o CAMPEÃO?</span>
+        </label>
+
+        <button type="submit" id="btn-enviar">Salvar Resultado</button>
+        <div id="status" class="status-msg"></div>
+    </form>
+</div>
+
+<script>
+    const SB_URL = "https://izeayydapmwtnevkzfhm.supabase.co";
+    const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZWF5eWRhcG13dG5ldmt6ZmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NDE1NDUsImV4cCI6MjA4NTAxNzU0NX0.wSkyGzqFny606kpwvrg47-sZFP4v_62ozW2Np8EG90A";
+
+    const form = document.getElementById('form-admin');
+    const btn = document.getElementById('btn-enviar');
+    const status = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        btn.disabled = true;
+        btn.innerText = "Processando...";
+        status.style.display = "none";
+
+        const payload = {
+            mc_nome: document.getElementById('mc_nome').value,
+            batalha_id: document.getElementById('batalha_id').value,
+            pontos: parseInt(document.getElementById('pontos').value),
+            twolalas: parseInt(document.getElementById('twolalas').value),
+            folhinhas: parseInt(document.getElementById('folhinhas').value),
+            vitoria: document.getElementById('vitoria').checked
+        };
+
+        try {
+            const res = await fetch(`${SB_URL}/rest/v1/participacoes`, {
+                method: "POST",
+                headers: {
+                    "apikey": SB_KEY,
+                    "Authorization": `Bearer ${SB_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                status.innerText = "✅ Pontuação salva!";
+                status.style.color = "#2ecc71";
+                status.style.display = "block";
+                form.reset();
+            } else {
+                throw new Error("Erro na resposta");
+            }
+        } catch (err) {
+            status.innerText = "❌ Erro ao conectar.";
+            status.style.color = "#e74c3c";
+            status.style.display = "block";
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Salvar Resultado";
+        }
+    });
+</script>
+</body>
+</html>
