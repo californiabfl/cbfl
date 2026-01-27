@@ -1,7 +1,11 @@
-// CONFIGURAÇÃO SUPABASE CONECTADA
+/**
+ * CBFL - Motor do Ranking 3.0 (Blindado contra Maiúsculas/Minúsculas)
+ */
+
 const SB_URL = "https://izeayydapmwtnevkzfhm.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZWF5eWRhcG13dG5ldmt6ZmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NDE1NDUsImV4cCI6MjA4NTAxNzU0NX0.wSkyGzqFny606kpwvrg47-sZFP4v_62ozW2Np8EG90A";
 
+// No dicionário, os caminhos das logos estão em MINÚSCULO
 const infoBatalhas = {
     "001": { nome: "Sangue na 7", logo: "img/bat001.png" },
     "002": { nome: "Batalha Nova Era", logo: "img/bat002.png" },
@@ -57,19 +61,27 @@ function renderizar(dados) {
     dados.forEach((item, index) => {
         let conquistasHtml = "";
         for (let batId in item.conquistas) {
+            // Garante que a logo da batalha seja buscada em minúsculo
+            const logoPath = infoBatalhas[batId].logo.toLowerCase();
             conquistasHtml += `
                 <div class="selo-batalha" title="Ganhou ${item.conquistas[batId]}x">
-                    <img src="${infoBatalhas[batId].logo}">
+                    <img src="${logoPath}">
                     <span class="selo-count">${item.conquistas[batId]}x</span>
                 </div>`;
         }
+
+        // A MÁGICA ESTÁ AQUI:
+        // .toLowerCase() transforma "P.A" em "p.a" e "Mineirim" em "mineirim"
+        // Assim, o código sempre vai procurar o arquivo em minúsculo na pasta img/
+        const nomeParaArquivo = item.nome.toLowerCase();
+        const fotoUrl = `img/${nomeParaArquivo}.png`;
 
         corpo.innerHTML += `
             <tr>
                 <td style="font-size: 1.5rem; font-weight: bold;">${index + 1}º</td>
                 <td class="nome-mc">
                     <div class="foto-container">
-                        <img src="img/${item.nome}.png" class="foto-mc" onerror="this.src='img/mc_default.png'">
+                        <img src="${fotoUrl}" class="foto-mc" onerror="this.src='img/mc_default.png'">
                     </div>
                     <div style="display:inline-block; vertical-align:middle;">
                         <span class="mc-name">${item.nome}</span>
