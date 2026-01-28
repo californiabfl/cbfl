@@ -9,7 +9,9 @@ const mapaBatalhas = {
     "004": { nome: "PICO" },
     "005": { nome: "BENÇA" },
     "006": { nome: "EDUCA" },
-    "007": { nome: "ZN" }
+    "007": { nome: "ZN" },
+    "008": { nome: "BLACK" },
+    "009": { nome: "MKT" }
 };
 
 function getFotoUrl(nome) {
@@ -31,16 +33,13 @@ async function gerarRanking() {
         if (!corpo) return;
 
         corpo.innerHTML = ordenado.map((item, i) => {
-            // Filtrar apenas as vitórias (folhinhas) deste MC
             const vitoriasMc = participacoes.filter(p => p.mc_nome === item.mc_nome && p.folhinhas > 0);
             
-            // Agrupar contagem por ID da Batalha
             const medalhas = {};
             vitoriasMc.forEach(v => {
                 medalhas[v.batalha_id] = (medalhas[v.batalha_id] || 0) + 1;
             });
 
-            // Gerar o HTML das logos (escudos)
             const badgesHtml = Object.keys(medalhas).map(batId => {
                 const qtd = medalhas[batId];
                 const multiplicador = qtd > 1 ? `<span class="badge-multi">${qtd}x</span>` : "";
@@ -75,17 +74,31 @@ async function gerarRanking() {
     } catch (e) { console.error("Erro no ranking:", e); }
 }
 
-// (As funções escolherEdicao, abrirBracket e gerarSidebars continuam as mesmas da versão anterior...)
-// [Mantendo as funções para garantir que o arquivo esteja completo]
+// AJUSTADO: Sempre exibe o modal de data, mesmo com apenas 1 edição
 async function escolherEdicao(idBatalha) {
     try {
         const { data: edicoes, error } = await supabaseClient.from('edicoes')
-            .select('id, data_edicao').eq('batalha_id', idBatalha).order('data_edicao', { ascending: false });
+            .select('id, data_edicao')
+            .eq('batalha_id', idBatalha)
+            .order('data_edicao', { ascending: false });
+
         if (error || !edicoes.length) return alert("Nenhuma edição encontrada.");
-        if (edicoes.length === 1) return abrirBracket(edicoes[0].id, true);
+
+        // Criar modal de datas (Removido o "if length === 1")
         const modal = document.createElement('div');
         modal.className = 'modal-bracket';
-        modal.innerHTML = `<div class="modal-content" style="max-width: 400px; text-align: center;"><span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span><h3 style="color:var(--primary)">EDIÇÕES</h3><div style="display:grid; gap:10px;">${edicoes.map(ed => `<button onclick="this.parentElement.parentElement.parentElement.remove(); abrirBracket('${ed.id}', true)" class="btn-data">BATALHA DE ${new Date(ed.data_edicao).toLocaleDateString('pt-BR')}</button>`).join('')}</div></div>`;
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 400px; text-align: center;">
+                <span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span>
+                <h3 style="color:var(--primary)">EDIÇÕES</h3>
+                <div style="display:grid; gap:10px;">
+                    ${edicoes.map(ed => `
+                        <button onclick="this.parentElement.parentElement.parentElement.remove(); abrirBracket('${ed.id}', true)" class="btn-data">
+                            BATALHA DE ${new Date(ed.data_edicao).toLocaleDateString('pt-BR')}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>`;
         document.body.appendChild(modal);
     } catch (e) { console.error(e); }
 }
@@ -93,9 +106,12 @@ async function escolherEdicao(idBatalha) {
 async function abrirBracket(idRef, ehIdEdicao = false) {
     try {
         let q = supabaseClient.from('edicoes').select('*');
-        if (ehIdEdicao) q = q.eq('id', idRef); else q = q.eq('batalha_id', idRef).order('data_edicao', { ascending: false }).limit(1);
+        if (ehIdEdicao) q = q.eq('id', idRef); 
+        else q = q.eq('batalha_id', idRef).order('data_edicao', { ascending: false }).limit(1);
+        
         const { data } = await q; if (!data.length) return;
         const ed = data[0], b = ed.bracket_json, p = ed.placares_json, campF = (ed.campeao || "---").toUpperCase();
+        
         const renderF = (lista, prefix, titulo) => {
             if (!lista || lista.length === 0 || lista.every(v => v === "-")) return "";
             let html = `<div class="v-round"><h4>${titulo}</h4>`;
@@ -105,19 +121,49 @@ async function abrirBracket(idRef, ehIdEdicao = false) {
             }
             return html + `</div>`;
         };
+
         const m = document.createElement('div'); m.className = 'modal-bracket';
         m.innerHTML = `<div class="modal-content"><span class="close" onclick="this.parentElement.parentElement.remove()">&times;</span><div class="bracket-view">${renderF(b.oitavas,'oit','Oitavas')}${renderF(b.quartas,'qua','Quartas')}${renderF(b.semi,'sem','Semi')}${renderF(b.final,'fin','Final')}<div class="v-round"><h4>🏆 Campeão</h4><div class="v-mc-card winner-card"><div class="mc-info"><img src="${getFotoUrl(campF)}" class="v-foto-mini"><span class="v-nome" style="color:var(--primary)">${campF}</span></div></div></div></div></div>`;
         document.body.appendChild(m);
     } catch (e) { console.error(e); }
 }
 
-function gerarSidebars() {
+async function gerarSidebars() {
     const L = document.getElementById('lista-left'), R = document.getElementById('lista-right');
-    if(!L || !R) return; L.innerHTML = ""; R.innerHTML = "";
-    Object.keys(mapaBatalhas).forEach((id, i) => {
-        const h = `<div class="item-batalha-lateral" onclick="escolherEdicao('${id}')"><img src="img/bat${id}.png" onerror="this.src='img/default_bat.png'"><span>${mapaBatalhas[id].nome}</span></div>`;
-        if (i % 2 === 0) L.innerHTML += h; else R.innerHTML += h;
-    });
+    if(!L || !R) return; 
+    L.innerHTML = ""; R.innerHTML = "";
+
+    try {
+        const { data: ultimasEdicoes } = await supabaseClient
+            .from('edicoes')
+            .select('batalha_id, data_edicao')
+            .order('data_edicao', { ascending: false });
+
+        const datasRecentess = {};
+        if (ultimasEdicoes) {
+            ultimasEdicoes.forEach(ed => {
+                if (!datasRecentess[ed.batalha_id]) {
+                    datasRecentess[ed.batalha_id] = new Date(ed.data_edicao).getTime();
+                }
+            });
+        }
+
+        const batalhasOrdenadas = Object.keys(mapaBatalhas).sort((a, b) => {
+            return (datasRecentess[b] || 0) - (datasRecentess[a] || 0);
+        });
+
+        batalhasOrdenadas.forEach((id, i) => {
+            const h = `
+                <div class="item-batalha-lateral" onclick="escolherEdicao('${id}')">
+                    <img src="img/bat${id}.png" onerror="this.src='img/default_bat.png'">
+                    <span>${mapaBatalhas[id].nome}</span>
+                </div>`;
+            if (i < 5) L.innerHTML += h; else R.innerHTML += h;
+        });
+
+    } catch (e) {
+        console.error("Erro ao ordenar stories:", e);
+    }
 }
 
 document.addEventListener('DOMContentLoaded', gerarRanking);
