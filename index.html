@@ -45,20 +45,36 @@
         }
 
         .item-batalha-lateral { 
-            text-align: center; 
-            min-width: 85px; 
-            cursor: pointer; 
-            flex-shrink: 0; 
-        }
-        .item-batalha-lateral img { 
-            width: 60px; 
-            height: 60px; 
-            object-fit: contain; 
-            border-radius: 50%; 
-            border: 2px solid var(--primary);
-            padding: 3px;
-            background: #000;
-            margin-bottom: 5px; 
+    text-align: center; 
+    min-width: 90px; 
+    cursor: pointer; 
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.item-batalha-lateral img { 
+    width: 60px; 
+    height: 60px; 
+    min-height: 60px; /* Garante que não achate */
+    object-fit: cover; /* Preenche o círculo eliminando as faixas */
+    object-position: center; 
+    border-radius: 50%; 
+    border: 2px solid var(--primary);
+    background: #000;
+    margin-bottom: 8px; /* Espaço entre a foto e o nome */
+    display: block;
+}
+
+.item-batalha-lateral span { 
+    font-size: 0.65rem; 
+    font-weight: bold; 
+    text-transform: uppercase; 
+    color: #888; 
+    display: block;
+    width: 100%; /* Garante que o texto fique centralizado embaixo */
+}
         }
         .item-batalha-lateral span { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: #888; display: block; }
 
