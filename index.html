@@ -44,7 +44,7 @@
             gap: 15px; 
         }
 
-        /* AJUSTE DAS LOGOS (SEM FAIXAS PRETAS) */
+        /* LOGOS DAS BATALHAS */
         .item-batalha-lateral { 
             text-align: center; 
             min-width: 90px; 
@@ -77,31 +77,29 @@
             width: 100%;
         }
 
-        /* NOVO TÍTULO ESTILO STREET/GRAFITE */
+        /* TÍTULO CBFL AJUSTADO */
         .brand-title {
-    font-family: 'Black Ops One', cursive;
-    text-align: center;
-    width: 100%;
-    white-space: nowrap; 
-    /* Diminuímos de 4.6 para 3.2 para não ocupar tanto espaço vertical */
-    font-size: 3.2vw; 
-    color: var(--primary);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin: 15px 0; /* Margem reduzida */
-    padding: 8px 0;
-    text-shadow: 2px 2px 0px #000; /* Sombra mais discreta */
-    border-top: 1px solid #1a1a1a;
-    border-bottom: 1px solid #1a1a1a;
-    background: linear-gradient(90deg, transparent, #0f0f0f, transparent);
-    opacity: 0.9;
-}
-        
+            font-family: 'Black Ops One', cursive;
+            text-align: center;
+            width: 100%;
+            white-space: nowrap; /* No PC fica em uma linha */
+            font-size: 2.8vw; /* Tamanho menor para ser elegante no PC */
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 20px 0;
+            padding: 10px 20px;
+            box-sizing: border-box;
+            text-shadow: 2px 2px 0px #000;
+            border-top: 1px solid #1a1a1a;
+            border-bottom: 1px solid #1a1a1a;
+            background: linear-gradient(90deg, transparent, #0f0f0f, transparent);
+        }
 
         /* RANKING PRINCIPAL */
         .content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
         .header-ranking { text-align: center; margin-bottom: 30px; }
-        .header-ranking h1 { color: #555; font-size: 1.2rem; letter-spacing: 5px; text-transform: uppercase; margin: 0; }
+        .header-ranking h1 { color: #555; font-size: 1.1rem; letter-spacing: 4px; text-transform: uppercase; margin: 0; }
         
         .ranking-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
         .ranking-table tr { background: var(--card); border-radius: 8px; }
@@ -117,7 +115,7 @@
         
         .pts-badge { background: var(--primary); color: #000; padding: 6px 15px; border-radius: 20px; font-weight: 900; }
 
-        /* BRACKET (ORIGINAL) */
+        /* MODAL BRACKET */
         .modal-bracket { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; }
         .modal-content { background: #0f0f0f; padding: 25px; border-radius: 15px; width: 96%; max-width: 1400px; border: 1px solid var(--primary); position: relative; max-height: 92vh; overflow: auto; }
         
@@ -146,29 +144,23 @@
             background: rgba(0,0,0,0.6); width: 60px; height: 60px; line-height: 55px; text-align: center; border-radius: 50%; border: 1px solid var(--primary);
         }
 
-        /* Botão das edições no modal */
         .btn-data {
-            background: #1a1a1a;
-            color: white;
-            border: 1px solid var(--border);
-            padding: 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: 0.3s;
+            background: #1a1a1a; color: white; border: 1px solid var(--border); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; transition: 0.3s;
         }
-        .btn-data:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: #000;
-        }
+        .btn-data:hover { border-color: var(--primary); color: var(--primary); background: #000; }
 
-        @media (max-width: 1100px) {
+        /* REGRAS PARA CELULAR */
+        @media (max-width: 600px) {
+            .brand-title { 
+                white-space: normal; /* PERMITE QUEBRA DE LINHA NO CELULAR */
+                font-size: 1.8rem; /* Tamanho fixo para legibilidade */
+                line-height: 1.1;
+                padding: 15px 10px;
+                letter-spacing: 1px;
+            }
             .bracket-view { zoom: 1; transform: scale(1); flex-direction: column !important; min-width: auto; }
             .v-round { width: 100%; margin-bottom: 40px; }
             .close { top: 15px; right: 15px; font-size: 40px; width: 50px; height: 50px; line-height: 45px; }
-            .brand-title { font-size: 5.4vw; } /* Leve ajuste para celular */
         }
     </style>
 </head>
@@ -192,9 +184,9 @@
                     <tr style="color: #555; font-size: 0.8rem; text-transform: uppercase;">
                         <th style="text-align: left; padding-left: 15px;">Posição</th>
                         <th style="text-align: left;">MC</th>
-                        <th align="center">Pontos</th>
-                        <th align="center">Twolalas</th>
-                        <th align="center">Folhinhas</th>
+                        <th align="center">Pts</th>
+                        <th align="center">2L</th>
+                        <th align="center">Folhas</th>
                     </tr>
                 </thead>
                 <tbody id="corpo-ranking"></tbody>
