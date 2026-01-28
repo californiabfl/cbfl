@@ -94,10 +94,89 @@
 
         .close { position: absolute; right: 20px; top: 10px; font-size: 35px; cursor: pointer; color: #444; }
 
-        @media (max-width: 1100px) { 
-            .sidebar { display: none; } 
-            .bracket-view { zoom: 1; transform: scale(1); flex-direction: column; min-width: auto; align-items: center; }
-        }
+        /* --- AJUSTE PARA MOBILE (CELULAR) --- */
+@media (max-width: 1100px) {
+    .main-container {
+        flex-direction: column; /* Empilha as sidebars no topo e o ranking embaixo */
+    }
+
+    .sidebar {
+        width: 100% !important;
+        flex-direction: row !important; /* Batalhas ficam lado a lado */
+        overflow-x: auto; /* Permite deslizar o dedo para o lado para ver todas */
+        padding: 10px;
+        gap: 10px;
+        height: auto;
+        white-space: nowrap;
+        border-bottom: 2px solid var(--primary);
+        box-sizing: border-box;
+    }
+
+    .item-batalha-lateral {
+        min-width: 110px; /* Tamanho fixo para não esmagar no scroll */
+        flex-shrink: 0;
+        padding: 10px;
+        margin-bottom: 0; /* Remove o espaço debaixo para alinhar na horizontal */
+    }
+
+    .item-batalha-lateral img {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 5px;
+    }
+
+    .content {
+        padding: 15px;
+    }
+
+    .header-ranking h1 {
+        font-size: 1.6rem;
+        letter-spacing: 2px;
+    }
+
+    /* Ajuste da Tabela no Celular */
+    .ranking-table td {
+        padding: 10px 8px;
+    }
+
+    .mc-name {
+        font-size: 1rem;
+    }
+
+    .foto-container {
+        width: 45px;
+        height: 45px;
+        min-width: 45px;
+    }
+
+    .medalha-item {
+        width: 28px;
+        height: 28px;
+    }
+
+    /* Ajuste do Bracket no Celular */
+    .modal-content {
+        padding: 15px;
+        width: 98%;
+    }
+
+    .bracket-view {
+        zoom: 1; 
+        transform: scale(1);
+        flex-direction: column !important; /* Chaves uma embaixo da outra */
+        min-width: auto;
+        padding: 10px;
+    }
+
+    .v-round {
+        width: 100%;
+        margin-bottom: 40px;
+    }
+
+    .matchup {
+        width: 100%;
+    }
+}
     </style>
 </head>
 <body>
