@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RANKING CBFL - OFICIAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -19,7 +20,7 @@
         
         .main-container { display: flex; flex-direction: column; width: 100%; min-height: 100vh; }
 
-        /* BARRA DE STORIES - UNIFICADA PARA EXIBIR TODAS AS BATALHAS */
+        /* BARRA DE STORIES */
         .stories-wrapper {
             width: 100%;
             background: var(--card);
@@ -37,51 +38,70 @@
             gap: 15px;
         }
 
-        /* Os IDs que o app.js usa para injetar as batalhas */
         #lista-left, #lista-right { 
             display: flex; 
             flex-direction: row; 
             gap: 15px; 
         }
 
+        /* AJUSTE DAS LOGOS (SEM FAIXAS PRETAS) */
         .item-batalha-lateral { 
-    text-align: center; 
-    min-width: 90px; 
-    cursor: pointer; 
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.item-batalha-lateral img { 
-    width: 60px; 
-    height: 60px; 
-    min-height: 60px; /* Garante que não achate */
-    object-fit: cover; /* Preenche o círculo eliminando as faixas */
-    object-position: center; 
-    border-radius: 50%; 
-    border: 2px solid var(--primary);
-    background: #000;
-    margin-bottom: 8px; /* Espaço entre a foto e o nome */
-    display: block;
-}
-
-.item-batalha-lateral span { 
-    font-size: 0.65rem; 
-    font-weight: bold; 
-    text-transform: uppercase; 
-    color: #888; 
-    display: block;
-    width: 100%; /* Garante que o texto fique centralizado embaixo */
-}
+            text-align: center; 
+            min-width: 90px; 
+            cursor: pointer; 
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .item-batalha-lateral span { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: #888; display: block; }
 
-        /* RANKING PRINCIPAL ORIGINAL */
+        .item-batalha-lateral img { 
+            width: 60px; 
+            height: 60px; 
+            min-height: 60px;
+            object-fit: cover; 
+            object-position: center; 
+            border-radius: 50%; 
+            border: 2px solid var(--primary);
+            background: #000;
+            margin-bottom: 8px; 
+            display: block;
+        }
+
+        .item-batalha-lateral span { 
+            font-size: 0.65rem; 
+            font-weight: bold; 
+            text-transform: uppercase; 
+            color: #888; 
+            display: block;
+            width: 100%;
+        }
+
+        /* NOVO TÍTULO ESTILO STREET/GRAFITE */
+        .brand-title {
+    font-family: 'Black Ops One', cursive;
+    text-align: center;
+    width: 100%;
+    white-space: nowrap; 
+    /* Diminuímos de 4.6 para 3.2 para não ocupar tanto espaço vertical */
+    font-size: 3.2vw; 
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 15px 0; /* Margem reduzida */
+    padding: 8px 0;
+    text-shadow: 2px 2px 0px #000; /* Sombra mais discreta */
+    border-top: 1px solid #1a1a1a;
+    border-bottom: 1px solid #1a1a1a;
+    background: linear-gradient(90deg, transparent, #0f0f0f, transparent);
+    opacity: 0.9;
+}
+        
+
+        /* RANKING PRINCIPAL */
         .content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
         .header-ranking { text-align: center; margin-bottom: 30px; }
-        .header-ranking h1 { color: var(--primary); font-size: 1.8rem; letter-spacing: 3px; text-transform: uppercase; margin: 0; }
+        .header-ranking h1 { color: #555; font-size: 1.2rem; letter-spacing: 5px; text-transform: uppercase; margin: 0; }
         
         .ranking-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
         .ranking-table tr { background: var(--card); border-radius: 8px; }
@@ -97,7 +117,7 @@
         
         .pts-badge { background: var(--primary); color: #000; padding: 6px 15px; border-radius: 20px; font-weight: 900; }
 
-        /* --- TUDO DO BRACKET ABAIXO É O SEU ORIGINAL SEM ALTERAÇÕES --- */
+        /* BRACKET (ORIGINAL) */
         .modal-bracket { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; }
         .modal-content { background: #0f0f0f; padding: 25px; border-radius: 15px; width: 96%; max-width: 1400px; border: 1px solid var(--primary); position: relative; max-height: 92vh; overflow: auto; }
         
@@ -126,11 +146,29 @@
             background: rgba(0,0,0,0.6); width: 60px; height: 60px; line-height: 55px; text-align: center; border-radius: 50%; border: 1px solid var(--primary);
         }
 
-        /* MEDIA QUERIES ORIGINAIS */
+        /* Botão das edições no modal */
+        .btn-data {
+            background: #1a1a1a;
+            color: white;
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .btn-data:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #000;
+        }
+
         @media (max-width: 1100px) {
             .bracket-view { zoom: 1; transform: scale(1); flex-direction: column !important; min-width: auto; }
             .v-round { width: 100%; margin-bottom: 40px; }
             .close { top: 15px; right: 15px; font-size: 40px; width: 50px; height: 50px; line-height: 45px; }
+            .brand-title { font-size: 5.4vw; } /* Leve ajuste para celular */
         }
     </style>
 </head>
@@ -143,9 +181,11 @@
             </div>
         </div>
 
+        <div class="brand-title">California Brasileira Freestyle League</div>
+
         <div class="content">
             <div class="header-ranking">
-                <h1>RANKING CBFL 2026</h1>
+                <h1>TEMPORADA 2026</h1>
             </div>
             <table class="ranking-table">
                 <thead>
