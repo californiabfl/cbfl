@@ -92,8 +92,41 @@
         .winner-card .v-nome { font-size: 1.25rem; }
         .winner-card .v-foto-mini { width: 55px; height: 55px; }
 
-        .close { position: absolute; right: 20px; top: 10px; font-size: 35px; cursor: pointer; color: #444; }
+        /* 1. Ajuste Geral do Botão de Fechar (Desktop e Mobile) */
+.close { 
+    position: fixed; /* Agora ele não some ao rolar a tela */
+    right: 20px; 
+    top: 20px; 
+    font-size: 50px; /* Bem grande para o dedo acertar */
+    cursor: pointer; 
+    color: var(--primary); 
+    z-index: 3000; /* Garante que fique acima de tudo */
+    background: rgba(0,0,0,0.6); /* Fundo escuro para destacar no fundo preto */
+    width: 60px;
+    height: 60px;
+    line-height: 55px;
+    text-align: center;
+    border-radius: 50%;
+    border: 1px solid var(--primary);
+}
 
+/* 2. Ajuste específico para Mobile dentro do @media (max-width: 1100px) */
+@media (max-width: 1100px) {
+    /* ... mantenha o que já fizemos e adicione/ajuste isso: */
+    
+    .close {
+        top: 15px;
+        right: 15px;
+        font-size: 40px;
+        width: 50px;
+        height: 50px;
+        line-height: 45px;
+    }
+
+    .modal-content {
+        padding-top: 70px; /* Dá espaço para o botão não cobrir o título do bracket */
+    }
+}
         /* --- AJUSTE PARA MOBILE (CELULAR) --- */
 @media (max-width: 1100px) {
     .main-container {
