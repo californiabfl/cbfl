@@ -22,11 +22,28 @@
         
         .main-container { display: flex; flex-direction: column; width: 100%; min-height: 100vh; }
 
-        /* STORIES */
+        /* CONTAINER DA LOGO NO TOPO ABSOLUTO */
+        .brand-logo-container {
+            text-align: center;
+            padding: 25px 20px;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .main-logo {
+            max-width: 280px; 
+            height: auto;
+            filter: drop-shadow(0 0 12px rgba(255, 69, 0, 0.4));
+        }
+
+        /* STORIES ABAIXO DA LOGO */
         .stories-wrapper {
             width: 100%;
             background: #000;
-            border-bottom: 3px solid var(--primary-dark);
+            border-top: 1px solid #222; /* Divisão sutil com a logo */
+            border-bottom: 2px solid var(--primary-dark);
             padding: 15px 0;
             overflow-x: auto;
             scrollbar-width: none;
@@ -47,32 +64,14 @@
 
         .item-batalha-lateral span { font-size: 0.65rem; font-weight: bold; text-transform: uppercase; color: #999; }
 
-        /* TÍTULO */
-        .brand-title {
-            font-family: 'Black Ops One', cursive;
-            text-align: center;
-            width: 100%;
-            white-space: nowrap;
-            font-size: 2.8vw;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin: 20px 0;
-            padding: 15px 20px;
-            box-sizing: border-box;
-            text-shadow: 3px 3px 0px var(--primary-dark);
-            border-top: 1px solid var(--primary-dark);
-            border-bottom: 1px solid var(--primary-dark);
-            background: linear-gradient(90deg, transparent, #1a0000, transparent);
-        }
-
         /* RANKING */
         .content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
         .header-ranking { text-align: center; margin-bottom: 30px; }
-        .header-ranking h1 { color: #666; font-size: 1.1rem; letter-spacing: 4px; text-transform: uppercase; margin: 0; }
+        .header-ranking h1 { color: #555; font-size: 1.1rem; letter-spacing: 4px; text-transform: uppercase; margin: 0; }
         
         .ranking-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
-        .ranking-table tr { background: var(--card); border-radius: 8px; }
+        .ranking-table tr { background: var(--card); border-radius: 8px; transition: 0.3s; }
+        .ranking-table tr:hover { transform: scale(1.005); background: #1a0505; }
         .ranking-table td { padding: 12px 15px; vertical-align: middle; }
 
         .foto-container { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; border: 2.5px solid var(--primary); margin-right: 18px; }
@@ -82,61 +81,33 @@
         .medalha-item img { width: 35px; height: 35px; border-radius: 50%; border: 1.5px solid var(--primary-dark); object-fit: cover; background: #111; }
         .pts-badge { background: linear-gradient(to bottom, var(--primary), var(--primary-dark)); color: #fff; padding: 6px 15px; border-radius: 4px; font-weight: 900; }
 
-        /* MODAL BRACKET - CORREÇÃO DAS FOTOS */
+        /* MODAL BRACKET */
         .modal-bracket { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.97); z-index: 2000; display: flex; align-items: center; justify-content: center; }
         .modal-content { background: #080000; padding: 25px; border-radius: 10px; width: 96%; max-width: 1400px; border: 1px solid var(--primary-dark); position: relative; max-height: 92vh; overflow: auto; }
         
-        .bracket-view { 
-            display: flex; justify-content: space-between; gap: 10px; 
-            min-width: 1150px; padding: 15px 0;
-            zoom: 0.82; transform: scale(0.82); transform-origin: top center;
-        }
-
-        .v-round h4 { text-align: center; color: var(--primary); border-bottom: 1px solid #331111; padding-bottom: 8px; font-size: 0.8rem; text-transform: uppercase; }
-        .matchup { display: flex; flex-direction: column; margin: 12px 0; width: 95%; }
-        
-        /* ESTA REGRA ABAIXO FOI REVISADA PARA MANTER O TAMANHO CORRETO */
         .v-mc-card { background: #111; border: 1px solid #222; display: flex; align-items: center; justify-content: space-between; padding: 6px 15px; height: 58px; }
-        .mc-info { display: flex; align-items: center; gap: 12px; }
-        
-        /* FOTO MINI NO BRACKET - FORÇANDO TAMANHO FIXO */
-        .v-foto-mini { 
-            width: 42px !important; 
-            height: 42px !important; 
-            min-width: 42px !important; 
-            border-radius: 50%; 
-            border: 2px solid var(--primary); 
-            object-fit: cover; 
-            display: block;
-        }
-
-        .v-nome { font-size: 1rem; font-weight: 900; text-transform: uppercase; }
-        .v-placar { background: var(--primary-dark); color: #fff; padding: 4px 8px; border-radius: 4px; font-size: 0.95rem; font-weight: bold; border: 1px solid var(--primary); }
-        
-        /* CARD DO VENCEDOR */
-        .winner-card { border: 2px solid var(--accent) !important; background: linear-gradient(135deg, #440000 0%, #000 100%) !important; height: 75px !important; }
-        .winner-card .v-foto-mini { width: 55px !important; height: 55px !important; min-width: 55px !important; }
-        .winner-card .v-nome { font-size: 1.25rem; }
+        .v-foto-mini { width: 42px !important; height: 42px !important; min-width: 42px !important; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
 
         .close { 
             position: fixed; right: 20px; top: 20px; font-size: 50px; cursor: pointer; color: #fff; z-index: 3000; 
             background: var(--primary-dark); width: 60px; height: 60px; line-height: 55px; text-align: center; border-radius: 50%; border: 1px solid var(--primary);
         }
 
-        .btn-data {
-            background: #1a1a1a; color: white; border: 1px solid var(--border); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin: 5px;
-        }
-
+        /* MOBILE */
         @media (max-width: 600px) {
-            .brand-title { white-space: normal; font-size: 1.8rem; line-height: 1.1; padding: 15px 10px; }
-            .bracket-view { zoom: 1; transform: scale(1); flex-direction: column !important; min-width: auto; }
-            .v-round { width: 100%; margin-bottom: 40px; }
+            .main-logo { max-width: 180px; }
+            .brand-logo-container { padding: 15px 10px; }
             .close { top: 15px; right: 15px; width: 50px; height: 50px; line-height: 45px; font-size: 40px; }
         }
     </style>
 </head>
 <body>
     <div class="main-container">
+        
+        <div class="brand-logo-container">
+            <img src="img/cbfl.png" alt="Logo CBFL" class="main-logo">
+        </div>
+
         <div class="stories-wrapper">
             <div class="stories-content">
                 <div id="lista-left"></div>
@@ -144,11 +115,9 @@
             </div>
         </div>
 
-        <div class="brand-title">California Brasileira Freestyle League</div>
-
         <div class="content">
             <div class="header-ranking">
-                <h1>RANKING TEMPORADA 2026</h1>
+                <h1>TEMPORADA 2026</h1>
             </div>
             <table class="ranking-table">
                 <thead>
