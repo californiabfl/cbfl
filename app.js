@@ -16,92 +16,88 @@ function getFotoUrl(nome) {
 
 async function gerarRanking() {
     try {
-        const { data: ordenado } = await supabaseClient.from('ranking_geral').select('*');
+        const { data: ordenado, error } = await supabaseClient.from('ranking_geral').select('*');
+        if (error) throw error;
+
         const corpo = document.getElementById('corpo-ranking');
         if (corpo && ordenado) {
-            corpo.innerHTML = ordenado.slice(0, 8).map((item, i) => `
+            corpo.innerHTML = ordenado.map((item, i) => {
+                
+                let badgeHtml = "";
+                if (item.total_folhinhas > 0) {
+                    const multiplicador = item.total_folhinhas > 1 ? 
+                        `<span style="color:#fff; background:var(--primary); font-size:0.75rem; font-weight:900; padding:2px 6px; border-radius:10px; margin-left:-12px; z-index:2; border:1px solid #000; font-family:sans-serif;">${item.total_folhinhas}x</span>` : "";
+                    
+                    badgeHtml = `
+                        <div style="display:flex; align-items:center; margin-top:6px; position:relative;">
+                            <img src="img/bat002.png" style="width:36px; height:36px; border-radius:50%; border:2px solid var(--primary); object-fit:cover; background:#000;">
+                            ${multiplicador}
+                        </div>
+                    `;
+                }
+
+                return `
                 <tr>
                     <td style="color:var(--primary); font-weight:bold;">${i+1}º</td>
-                    <td align="left"><div style="display:flex; align-items:center"><img src="${getFotoUrl(item.mc_nome)}" class="foto-mc"><span class="mc-name" style="margin-left:10px">${item.mc_nome}</span></div></td>
-                    <td>${item.total_pontos} pts</td>
-                    <td style="color:#666">${item.total_twolalas} 2L</td>
-                    <td style="color:var(--primary)">${item.total_folhinhas} F</td>
-                </tr>
-            `).join('');
+                    <td align="left">
+                        <div style="display:flex; align-items:center">
+                            <img src="${getFotoUrl(item.mc_nome)}" class="foto-mc">
+                            <div style="margin-left:12px; display:flex; flex-direction:column; align-items:flex-start;">
+                                <span class="mc-name" style="line-height:1.2; font-size:1.1rem;">${item.mc_nome}</span>
+                                ${badgeHtml}
+                            </div>
+                        </div>
+                    </td>
+                    <td style="font-weight:bold; font-size:1.1rem;">${item.total_pontos}</td>
+                    <td style="color:#888;">${item.total_twolalas}</td>
+                    <td style="font-weight:bold;">${item.total_folhinhas || 0}</td>
+                </tr>`;
+            }).join('');
         }
-        gerarSidebars();
+        gerarStories();
     } catch (e) { console.error(e); }
 }
 
-async function escolherEdicao(idBatalha) {
-    try {
-        const { data: edicoes } = await supabaseClient.from('edicoes').select('id, data_edicao').eq('batalha_id', idBatalha).order('data_edicao', { ascending: false });
-        if (!edicoes || !edicoes.length) return alert("Nenhuma edição encontrada.");
-
-        const m = document.createElement('div');
-        m.className = 'modal-bracket';
-        m.innerHTML = `
-            <span class="close" onclick="this.parentElement.remove()">&times;</span>
-            <div class="modal-content" style="max-width: 400px; margin: auto;">
-                <h3 style="color:var(--primary); font-family:'Black Ops One'; text-align:center;">EDIÇÕES</h3>
-                ${edicoes.map(ed => `<button onclick="this.parentElement.parentElement.remove(); abrirBracket('${ed.id}', true)" class="btn-data">BATALHA DE ${new Date(ed.data_edicao).toLocaleDateString('pt-BR')}</button>`).join('')}
-            </div>`;
-        document.body.appendChild(m);
-    } catch (e) { console.error(e); }
-}
-
-async function abrirBracket(idRef, ehIdEdicao = false) {
-    try {
-        let q = supabaseClient.from('edicoes').select('*');
-        if (ehIdEdicao) q = q.eq('id', idRef); 
-        else q = q.eq('batalha_id', idRef).order('data_edicao', { ascending: false }).limit(1);
-        
-        const { data } = await q; if (!data.length) return;
-        const ed = data[0], b = ed.bracket_json, p = ed.placares_json, campF = (ed.campeao || "---").toUpperCase();
-        
-        const renderF = (lista, prefix, titulo) => {
-            if (!lista || lista.length === 0) return "";
-            let html = `<div class="v-round"><h4>${titulo}</h4>`;
-            for(let i=0; i<lista.length; i+=2) {
-                const n1 = (lista[i] || "-").toUpperCase(), n2 = (lista[i+1] || "-").toUpperCase();
-                html += `<div class="matchup">
-                    <div class="v-mc-card"><div style="display:flex; align-items:center"><img src="${getFotoUrl(n1)}" class="v-foto-mini"><span class="v-nome">${n1}</span></div><span class="v-placar">${p[prefix+'_'+i]||0}</span></div>
-                    <div class="v-mc-card"><div style="display:flex; align-items:center"><img src="${getFotoUrl(n2)}" class="v-foto-mini"><span class="v-nome">${n2}</span></div><span class="v-placar">${p[prefix+'_'+(i+1)]||0}</span></div>
-                </div>`;
-            }
-            return html + `</div>`;
-        };
-
-        const m = document.createElement('div'); 
-        m.className = 'modal-bracket';
-        m.innerHTML = `
-            <span class="close" onclick="this.parentElement.remove()">&times;</span>
-            <div class="modal-content">
-                <div class="bracket-view">
-                    ${renderF(b.oitavas,'oit','OITAVAS')}
-                    ${renderF(b.quartas,'qua','QUARTAS')}
-                    ${renderF(b.semi,'sem','SEMI')}
-                    ${renderF(b.final,'fin','FINAL')}
-                    <div class="v-round">
-                        <h4>🏆 CAMPEÃO</h4>
-                        <div class="v-mc-card" style="border-color:var(--primary)"><div style="display:flex; align-items:center"><img src="${getFotoUrl(campF)}" class="v-foto-mini"><span class="v-nome" style="color:var(--primary)">${campF}</span></div></div>
-                    </div>
-                </div>
-            </div>`;
-        document.body.appendChild(m);
-    } catch (e) { console.error(e); }
-}
-
-async function gerarSidebars() {
+async function gerarStories() {
     const L = document.getElementById('lista-left'), R = document.getElementById('lista-right');
     if(!L || !R) return;
-    const { data: eds } = await supabaseClient.from('edicoes').select('batalha_id, data_edicao').order('data_edicao', { ascending: false });
-    const ultimas = {}; 
-    if(eds) eds.forEach(e => { if(!ultimas[e.batalha_id]) ultimas[e.batalha_id] = new Date(e.data_edicao).getTime(); });
-    
-    Object.keys(mapaBatalhas).sort((a,b) => (ultimas[b]||0) - (ultimas[a]||0)).forEach((id, i) => {
-        const h = `<div class="item-batalha-lateral" onclick="escolherEdicao('${id}')"><img src="img/bat${id}.png" onerror="this.src='img/default_bat.png'"><span>${mapaBatalhas[id].nome}</span></div>`;
-        if (i < 5) L.innerHTML += h; else R.innerHTML += h;
-    });
+    L.innerHTML = ""; R.innerHTML = "";
+    try {
+        const { data: eds } = await supabaseClient.from('edicoes').select('batalha_id, data_edicao').order('data_edicao', { ascending: false });
+        const ultimas = {};
+        if(eds) eds.forEach(e => { if(!ultimas[e.batalha_id]) ultimas[e.batalha_id] = new Date(e.data_edicao).getTime(); });
+        const ids = Object.keys(mapaBatalhas).sort((a,b) => (ultimas[b]||0) - (ultimas[a]||0));
+        ids.forEach((id, i) => {
+            const h = `<div class="item-batalha-lateral" onclick="escolherEdicao('${id}')"><img src="img/bat${id}.png" onerror="this.src='img/cbfl.png'"><span>${mapaBatalhas[id].nome}</span></div>`;
+            if (i < 5) L.innerHTML += h; else R.innerHTML += h;
+        });
+    } catch (e) { console.error(e); }
 }
+
+async function escolherEdicao(idBat) {
+    const { data: eds } = await supabaseClient.from('edicoes').select('id, data_edicao').eq('batalha_id', idBat).order('data_edicao',{ascending:false});
+    if(!eds?.length) return alert("Sem edições.");
+    const m = document.createElement('div'); m.className='modal-bracket';
+    m.innerHTML = `<span class="close" onclick="this.parentElement.remove()">&times;</span><div class="modal-content" style="max-width:400px;margin:auto;"><h3 style="color:var(--primary);text-align:center;font-family:'Black Ops One';">EDIÇÕES</h3>${eds.map(ed=>`<button onclick="this.parentElement.parentElement.remove();abrirBracket('${ed.id}',true)" class="btn-data">${new Date(ed.data_edicao).toLocaleDateString('pt-BR')}</button>`).join('')}</div>`;
+    document.body.appendChild(m);
+}
+
+async function abrirBracket(id, ehId=false) {
+    let q = supabaseClient.from('edicoes').select('*');
+    if(ehId) q=q.eq('id',id); else q=q.eq('batalha_id',id).order('data_edicao',{ascending:false}).limit(1);
+    const {data} = await q; if(!data.length) return;
+    const ed=data[0], b=ed.bracket_json, p=ed.placares_json, camp=(ed.campeao||"-").toUpperCase();
+    const renderF = (lista, pre, tit) => {
+        if(!lista?.length) return "";
+        let h = `<div class="v-round"><h4>${tit}</h4>`;
+        for(let i=0; i<lista.length; i+=2) {
+            h += `<div class="matchup"><div class="v-mc-card"><div><img src="${getFotoUrl(lista[i])}" class="v-foto-mini"><span class="v-nome">${lista[i]}</span></div><span class="v-placar">${p[pre+'_'+i]||0}</span></div><div class="v-mc-card"><div><img src="${getFotoUrl(lista[i+1])}" class="v-foto-mini"><span class="v-nome">${lista[i+1]}</span></div><span class="v-placar">${p[pre+'_'+(i+1)]||0}</span></div></div>`;
+        }
+        return h + `</div>`;
+    };
+    const m = document.createElement('div'); m.className='modal-bracket';
+    m.innerHTML = `<span class="close" onclick="this.parentElement.remove()">&times;</span><div class="modal-content"><div class="bracket-view">${renderF(b.oitavas,'oit','OITAVAS')}${renderF(b.quartas,'qua','QUARTAS')}${renderF(b.semi,'sem','SEMI')}${renderF(b.final,'fin','FINAL')}<div class="v-round"><h4>🏆 CAMPEÃO</h4><div class="v-mc-card" style="border-color:var(--primary)"><div><img src="${getFotoUrl(camp)}" class="v-foto-mini"><span class="v-nome" style="color:var(--primary)">${camp}</span></div></div></div></div></div>`;
+    document.body.appendChild(m);
+}
+
 document.addEventListener('DOMContentLoaded', gerarRanking);

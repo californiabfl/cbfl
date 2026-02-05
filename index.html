@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RANKING CBFL - OFICIAL</title>
+    <title>RANKING CBFL - OFICIAL 2026</title>
     <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -18,11 +18,9 @@
 
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; }
         
-        /* LOGO */
         .brand-logo-container { text-align: center; padding: 25px 20px; background: #000; display: flex; justify-content: center; }
         .main-logo { max-width: 250px; filter: drop-shadow(0 0 12px rgba(255, 69, 0, 0.4)); }
 
-        /* STORIES */
         .stories-wrapper {
             width: 100%; background: #000; border-top: 1px solid #222; border-bottom: 2px solid var(--primary-dark);
             padding: 15px 0; overflow-x: auto; scrollbar-width: none;
@@ -34,7 +32,6 @@
         .item-batalha-lateral img { width: 60px; height: 60px; object-fit: cover; border-radius: 50%; border: 2px solid var(--primary); margin-bottom: 8px; }
         .item-batalha-lateral span { font-size: 0.6rem; font-weight: bold; text-transform: uppercase; color: #999; line-height: 1.1; max-width: 80px; }
 
-        /* SEÇÃO DE CADASTRO REORDENADA */
         .cadastro-container { text-align: center; padding: 40px 15px; background: linear-gradient(to bottom, #000, #0a0000); border-bottom: 1px solid #222; }
         
         .btn-inscricao {
@@ -45,23 +42,17 @@
         }
         .btn-inscricao:hover { background: var(--primary); transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 69, 0, 0.4); }
 
-        .lema-frase { 
-            color: #fff; font-size: 0.85rem; font-weight: bold; text-transform: uppercase; 
-            letter-spacing: 2px; display: block; margin-top: 5px; margin-bottom: 5px;
-        }
-        .lema-regras {
-            color: var(--primary); font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 1px; display: block; margin-bottom: 25px;
-        }
+        .lema-frase { color: #fff; font-size: 0.85rem; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 5px; }
+        .lema-regras { color: var(--primary); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 25px; }
 
         .aviso-educa { color: #888; font-size: 0.75rem; text-transform: uppercase; border-top: 1px solid #111; padding-top: 15px; display: inline-block; }
         .aviso-educa span { color: var(--primary); font-weight: bold; }
 
-        /* RANKING */
         .content { width: 100%; max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .ranking-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; filter: blur(10px); opacity: 0.2; pointer-events: none; }
-        .ranking-table tr { background: var(--card); }
-        .ranking-table td { padding: 12px; text-align: center; vertical-align: middle; }
+        .ranking-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        .ranking-table tr { background: var(--card); transition: 0.3s; }
+        .ranking-table tr:hover { background: #1a0500; }
+        .ranking-table td { padding: 12px; text-align: center; vertical-align: middle; border-bottom: 1px solid #222; }
         .foto-mc { width: 45px !important; height: 45px !important; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
         .mc-name { font-weight: bold; text-transform: uppercase; font-size: 1rem; color: #eee; }
 
@@ -109,16 +100,23 @@
             <a href="https://docs.google.com/forms/d/e/1FAIpQLSfyLZiu1yFfJBS13SALZleRMMF47GVyaFzhP0COzcyhZOk9kg/viewform" target="_blank" class="btn-inscricao">
                 SOLICITAR INSCRIÇÃO
             </a>
-            
             <span class="lema-frase">Silêncio, Respeito e Disciplina</span>
             <span class="lema-regras">CONHEÇA AS REGRAS DA LIGA</span>
-
-            <div class="aviso-educa">INÍCIO DA LIGA: <span>BATALHA DO EDUCA 01/02</span></div>
+            <div class="aviso-educa">TEMPORADA 2026 INICIADA | <span>CBFL OFICIAL</span></div>
         </div>
 
         <div class="content">
             <table class="ranking-table">
-                <tbody id="corpo-ranking"></tbody>
+                <thead>
+                    <tr style="background: none; color: #666; font-size: 0.7rem; text-transform: uppercase;">
+                        <th>Pos</th>
+                        <th align="left">Atlera</th>
+                        <th>Pts</th>
+                        <th>Twolala</th>
+                        <th>Folinha</th> </tr>
+                </thead>
+                <tbody id="corpo-ranking">
+                    </tbody>
             </table>
         </div>
     </div>

@@ -15,11 +15,8 @@
         .row-mc { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; position: relative; }
         input, select { background: #000; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 4px; }
         .nome-mc { flex: 1; text-transform: uppercase; font-weight: bold; }
-        
-        /* Cores dos Selects para facilitar */
         .placar-sel.vencedor { border-color: var(--primary); color: var(--primary); }
         .placar-sel.perdedor { border-color: var(--error); color: var(--error); }
-
         .sugestoes { position: absolute; top: 100%; left: 0; width: 100%; background: #333; border: 1px solid var(--primary); z-index: 100; max-height: 150px; overflow-y: auto; display: none; border-radius: 0 0 5px 5px; }
         .sugestao-item { padding: 8px; cursor: pointer; font-size: 0.8rem; border-bottom: 1px solid #444; }
         .sugestao-item:hover { background: var(--primary); color: #000; }
@@ -30,14 +27,23 @@
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="card">
         <h2 style="color:var(--primary)">SÚMULA COMPLETA (RANKING + BRACKET)</h2>
         <div class="header-config">
             <div style="flex:2">
                 <label>Batalha</label><br>
-                <select id="ed-bat" style="width:100%"><option value="001">SANGUE NA 7</option><option value="002">NOVA ERA</option><option value="003">COALIZÃO</option><option value="004">PICO</option><option value="005">BENÇA</option><option value="006">EDUCA</option><option value="007">ZN</option></select>
+                <select id="ed-bat" style="width:100%">
+                    <option value="001">SANGUE NA 7</option>
+                    <option value="002">NOVA ERA</option>
+                    <option value="003">COALIZÃO</option>
+                    <option value="004">PICO</option>
+                    <option value="005">BENÇA</option>
+                    <option value="006">EDUCA</option>
+                    <option value="007">ZN</option>
+                    <option value="008">BLACK</option>
+                    <option value="009">MKT</option>
+                </select>
             </div>
             <div style="flex:1">
                 <label>Data</label><br><input type="date" id="ed-data" style="width:100%">
@@ -48,29 +54,25 @@
             </div>
         </div>
     </div>
-
     <div id="area-duelos"></div>
-
     <div class="card">
         <h2 style="color:var(--primary)">CONFERIR ANTES DE SALVAR</h2>
         <table class="resumo-table">
-            <thead><tr><th>MC</th><th>FASE</th><th>2x0</th><th>PONTOS</th><th>FOLHA</th></tr></thead>
+            <thead><tr><th>MC</th><th>FASE</th><th>2x0</th><th>PONTOS</th><th>MEDALHA</th></tr></thead>
             <tbody id="corpo-resumo"></tbody>
         </table>
         <button onclick="enviarTudo()">🚀 PUBLICAR TUDO NO SITE</button>
     </div>
 </div>
-
 <script>
     const SB_URL = "https://izeayydapmwtnevkzfhm.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZWF5eWRhcG13dG5ldmt6ZmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NDE1NDUsImV4cCI6MjA4NTAxNzU0NX0.wSkyGzqFny606kpwvrg47-sZFP4v_62ozW2Np8EG90A";
     const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
-
     let listaMcsConhecidos = new Set();
     const PONTOS_FASE = { "oit": 1, "qua": 2, "sem": 5, "fin_perdeu": 7, "fin_venceu": 10 };
 
     async function carregarMcs() {
-        const { data } = await supabaseClient.from('participacoes').select('mc_nome');
+        const { data } = await supabaseClient.from('ranking_geral').select('mc_nome');
         if(data) data.forEach(p => listaMcsConhecidos.add(p.mc_nome.toUpperCase()));
     }
 
@@ -81,27 +83,28 @@
         const fases = formato == "16" ? ["oit", "qua", "sem", "fin"] : ["qua", "sem", "fin"];
         const qtdDuelos = { oit: 8, qua: 4, sem: 2, fin: 1 };
         const nomesFases = { oit: "Oitavas", qua: "Quartas", sem: "Semi", fin: "Final" };
-
         fases.forEach(f => {
             let html = `<div class="fase-title">${nomesFases[f]}</div><div class="grid-duelos">`;
             for (let i = 0; i < qtdDuelos[f]; i++) {
                 html += `
                 <div class="duelo-card">
                     <div class="row-mc">
-                        <input type="text" class="nome-mc" id="${f}_mc_${i*2}" oninput="mostrarSugestoes(this)" placeholder="MC 1" autocomplete="off">
+                        <input type="text" class="nome-mc" id="${f}_mc_${i*2}" oninput="mostrarSugestoes(this)" placeholder="MC 1">
                         <div class="sugestoes"></div>
                         <select class="placar-sel vencedor" id="${f}_p_${i*2}" onchange="atualizarEstiloSelect(this); calcularRanking()">
                             <option value="V" selected>VITÓRIA</option><option value="0">DERROTA</option>
                         </select>
                     </div>
                     <div class="row-mc">
-                        <input type="text" class="nome-mc" id="${f}_mc_${i*2+1}" oninput="mostrarSugestoes(this)" placeholder="MC 2" autocomplete="off">
+                        <input type="text" class="nome-mc" id="${f}_mc_${i*2+1}" oninput="mostrarSugestoes(this)" placeholder="MC 2">
                         <div class="sugestoes"></div>
                         <select class="placar-sel perdedor" id="${f}_p_${i*2+1}" onchange="atualizarEstiloSelect(this); calcularRanking()">
                             <option value="V">VITÓRIA</option><option value="0" selected>DERROTA</option>
                         </select>
                     </div>
-                    <select id="${f}_tipo_${i}" onchange="calcularRanking()" style="width:100%; font-size:0.7rem;"><option value="2x1">2x1</option><option value="2x0">2x0</option></select>
+                    <select id="${f}_tipo_${i}" onchange="calcularRanking()" style="width:100%; font-size:0.7rem;">
+                        <option value="2x1">2x1</option><option value="2x0">2x0</option><option value="1x0">1x0</option>
+                    </select>
                 </div>`;
             }
             area.innerHTML += html + `</div>`;
@@ -110,11 +113,8 @@
     }
 
     function atualizarEstiloSelect(sel) {
-        if(sel.value === "V") {
-            sel.classList.add('vencedor'); sel.classList.remove('perdedor');
-        } else {
-            sel.classList.add('perdedor'); sel.classList.remove('vencedor');
-        }
+        if(sel.value === "V") { sel.classList.add('vencedor'); sel.classList.remove('perdedor'); }
+        else { sel.classList.add('perdedor'); sel.classList.remove('vencedor'); }
     }
 
     function mostrarSugestoes(input) {
@@ -139,21 +139,20 @@
         const bracketData = { oitavas: [], quartas: [], semi: [], final: [] };
         const placaresJson = {};
         let campeaoFinal = "VAGO";
-
         ["oit", "qua", "sem", "fin"].forEach(f => {
             const qtd = f=="oit"?8 : f=="qua"?4 : f=="sem"?2 : 1;
             const faseKey = f=="oit"?"oitavas":f=="qua"?"quartas":f=="sem"?"semi":"final";
-            
             for(let i=0; i<qtd; i++) {
                 const n1 = document.getElementById(`${f}_mc_${i*2}`)?.value.toUpperCase().trim() || "-";
                 const n2 = document.getElementById(`${f}_mc_${i*2+1}`)?.value.toUpperCase().trim() || "-";
                 const p1 = document.getElementById(`${f}_p_${i*2}`)?.value;
                 const p2 = document.getElementById(`${f}_p_${i*2+1}`)?.value;
                 const tipo = document.getElementById(`${f}_tipo_${i}`)?.value;
-
                 bracketData[faseKey].push(n1, n2);
-                placaresJson[`${f}_${i*2}`] = (p1 === "V" ? 2 : (tipo === "2x1" ? 1 : 0));
-                placaresJson[`${f}_${i*2+1}`] = (p2 === "V" ? 2 : (tipo === "2x1" ? 1 : 0));
+                
+                if (tipo === "2x0") { placaresJson[`${f}_${i*2}`] = (p1==="V"?2:0); placaresJson[`${f}_${i*2+1}`] = (p2==="V"?2:0); }
+                else if (tipo === "1x0") { placaresJson[`${f}_${i*2}`] = (p1==="V"?1:0); placaresJson[`${f}_${i*2+1}`] = (p2==="V"?1:0); }
+                else { placaresJson[`${f}_${i*2}`] = (p1==="V"?2:1); placaresJson[`${f}_${i*2+1}`] = (p2==="V"?2:1); }
 
                 if(n1 !== "-" && n1 !== "") if(!resumo[n1]) resumo[n1] = { fase: "oit", twolalas: 0, folha: 0 };
                 if(n2 !== "-" && n2 !== "") if(!resumo[n2]) resumo[n2] = { fase: "oit", twolalas: 0, folha: 0 };
@@ -168,13 +167,12 @@
                 }
             }
         });
-
         const corpo = document.getElementById('corpo-resumo');
         corpo.innerHTML = "";
         Object.keys(resumo).forEach(nome => {
             const d = resumo[nome];
             const total = (PONTOS_FASE[d.fase] || 0) + d.twolalas;
-            corpo.innerHTML += `<tr><td><b>${nome}</b></td><td>${d.fase.replace('fin_perdeu','FINALISTA').replace('fin_venceu','CAMPEÃO').toUpperCase()}</td><td>${d.twolalas}</td><td style="color:var(--primary); font-weight:bold">${total}</td><td>${d.folha?'🏆':'-'}</td></tr>`;
+            corpo.innerHTML += `<tr><td><b>${nome}</b></td><td>${d.fase.replace('fin_perdeu','FINALISTA').replace('fin_venceu','CAMPEÃO').toUpperCase()}</td><td>${d.twolalas}</td><td>${total}</td><td>${d.folha?'🏆':'-'}</td></tr>`;
             resumo[nome].total = total;
         });
         return { resumo, bracketData, placaresJson, campeaoFinal };
@@ -184,27 +182,15 @@
         const { resumo, bracketData, placaresJson, campeaoFinal } = calcularRanking();
         const batId = document.getElementById('ed-bat').value;
         const dataEd = document.getElementById('ed-data').value;
-        if(!dataEd) return alert("Erro: Selecione a data!");
-
+        if(!dataEd) return alert("Selecione a data!");
         const dadosRanking = Object.keys(resumo).map(nome => ({
             mc_nome: nome, batalha_id: batId, pontos: resumo[nome].total, twolalas: resumo[nome].twolalas, folhinhas: resumo[nome].folha
         }));
-
-        const { error: errEd } = await supabaseClient.from('edicoes').insert([{
-            batalha_id: batId, data_edicao: dataEd, campeao: campeaoFinal, bracket_json: bracketData, placares_json: placaresJson
-        }]);
-
+        const { error: errEd } = await supabaseClient.from('edicoes').insert([{ batalha_id: batId, data_edicao: dataEd, campeao: campeaoFinal, bracket_json: bracketData, placares_json: placaresJson }]);
         const { error: errRank } = await supabaseClient.from('participacoes').insert(dadosRanking);
-
-        if(errEd || errRank) {
-            console.error(errEd, errRank);
-            alert("Erro ao salvar! Verifique se a tabela existe ou o RLS.");
-        } else { 
-            alert("MARCHA! Ranking e Bracket atualizados."); 
-            location.reload(); 
-        }
+        if(errEd || errRank) alert("Erro ao salvar! Veja o console.");
+        else { alert("MARCHA! Dados salvos."); location.reload(); }
     }
-
     document.addEventListener('DOMContentLoaded', () => { carregarMcs(); renderizarDuelos(); });
 </script>
 </body>
