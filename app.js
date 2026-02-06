@@ -16,7 +16,10 @@ function getFotoUrl(nome) {
 
 async function gerarRanking() {
     try {
+        // Busca o ranking e as últimas edições para saber quem ganhou o quê
         const { data: ordenado, error } = await supabaseClient.from('ranking_geral').select('*');
+        const { data: edições } = await supabaseClient.from('edicoes').select('campeao, batalha_id').order('data_edicao', { ascending: false });
+
         if (error) throw error;
 
         const corpo = document.getElementById('corpo-ranking');
@@ -25,12 +28,16 @@ async function gerarRanking() {
                 
                 let badgeHtml = "";
                 if (item.total_folhinhas > 0) {
+                    // Descobre qual foi a última batalha que este MC ganhou
+                    const ultimaVitoria = edições?.find(ed => ed.campeao && ed.campeao.toUpperCase().includes(item.mc_nome.toUpperCase()));
+                    const logoId = ultimaVitoria ? ultimaVitoria.batalha_id : "002"; // Fallback para 002 se não achar
+
                     const multiplicador = item.total_folhinhas > 1 ? 
                         `<span style="color:#fff; background:var(--primary); font-size:0.75rem; font-weight:900; padding:2px 6px; border-radius:10px; margin-left:-12px; z-index:2; border:1px solid #000; font-family:sans-serif;">${item.total_folhinhas}x</span>` : "";
                     
                     badgeHtml = `
                         <div style="display:flex; align-items:center; margin-top:6px; position:relative;">
-                            <img src="img/bat002.png" style="width:36px; height:36px; border-radius:50%; border:2px solid var(--primary); object-fit:cover; background:#000;">
+                            <img src="img/bat${logoId}.png" onerror="this.src='img/bat002.png'" style="width:36px; height:36px; border-radius:50%; border:2px solid var(--primary); object-fit:cover; background:#000;">
                             ${multiplicador}
                         </div>
                     `;
@@ -41,7 +48,7 @@ async function gerarRanking() {
                     <td style="color:var(--primary); font-weight:bold;">${i+1}º</td>
                     <td align="left">
                         <div style="display:flex; align-items:center">
-                            <img src="${getFotoUrl(item.mc_nome)}" class="foto-mc">
+                            <img src="${getFotoUrl(item.mc_nome)}" class="foto-mc" onerror="this.src='img/mc_default.png'">
                             <div style="margin-left:12px; display:flex; flex-direction:column; align-items:flex-start;">
                                 <span class="mc-name" style="line-height:1.2; font-size:1.1rem;">${item.mc_nome}</span>
                                 ${badgeHtml}
@@ -91,12 +98,12 @@ async function abrirBracket(id, ehId=false) {
         if(!lista?.length) return "";
         let h = `<div class="v-round"><h4>${tit}</h4>`;
         for(let i=0; i<lista.length; i+=2) {
-            h += `<div class="matchup"><div class="v-mc-card"><div><img src="${getFotoUrl(lista[i])}" class="v-foto-mini"><span class="v-nome">${lista[i]}</span></div><span class="v-placar">${p[pre+'_'+i]||0}</span></div><div class="v-mc-card"><div><img src="${getFotoUrl(lista[i+1])}" class="v-foto-mini"><span class="v-nome">${lista[i+1]}</span></div><span class="v-placar">${p[pre+'_'+(i+1)]||0}</span></div></div>`;
+            h += `<div class="matchup"><div class="v-mc-card"><div><img src="${getFotoUrl(lista[i])}" class="v-foto-mini" onerror="this.src='img/mc_default.png'"> <span class="v-nome">${lista[i]}</span></div><span class="v-placar">${p[pre+'_'+i]||0}</span></div><div class="v-mc-card"><div><img src="${getFotoUrl(lista[i+1])}" class="v-foto-mini" onerror="this.src='img/mc_default.png'"><span class="v-nome">${lista[i+1]}</span></div><span class="v-placar">${p[pre+'_'+(i+1)]||0}</span></div></div>`;
         }
         return h + `</div>`;
     };
     const m = document.createElement('div'); m.className='modal-bracket';
-    m.innerHTML = `<span class="close" onclick="this.parentElement.remove()">&times;</span><div class="modal-content"><div class="bracket-view">${renderF(b.oitavas,'oit','OITAVAS')}${renderF(b.quartas,'qua','QUARTAS')}${renderF(b.semi,'sem','SEMI')}${renderF(b.final,'fin','FINAL')}<div class="v-round"><h4>🏆 CAMPEÃO</h4><div class="v-mc-card" style="border-color:var(--primary)"><div><img src="${getFotoUrl(camp)}" class="v-foto-mini"><span class="v-nome" style="color:var(--primary)">${camp}</span></div></div></div></div></div>`;
+    m.innerHTML = `<span class="close" onclick="this.parentElement.remove()">&times;</span><div class="modal-content"><div class="bracket-view">${renderF(b.oitavas,'oit','OITAVAS')}${renderF(b.quartas,'qua','QUARTAS')}${renderF(b.semi,'sem','SEMI')}${renderF(b.final,'fin','FINAL')}<div class="v-round"><h4>🏆 CAMPEÃO</h4><div class="v-mc-card" style="border-color:var(--primary)"><div><img src="${getFotoUrl(camp)}" class="v-foto-mini" onerror="this.src='img/mc_default.png'"><span class="v-nome" style="color:var(--primary)">${camp}</span></div></div></div></div></div>`;
     document.body.appendChild(m);
 }
 
