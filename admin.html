@@ -2,195 +2,212 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>ADMIN CBFL - SÚMULA + BRACKET</title>
+    <title>ADMIN CBFL - SISTEMA COMPLETO</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root { --primary: #2ecc71; --error: #e74c3c; --bg: #0a0a0a; --card: #161616; --text: #eee; }
+        :root { --primary: #ff4500; --bg: #0a0a0a; --card: #161616; --text: #eee; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); padding: 20px; }
-        .container { max-width: 1100px; margin: auto; }
+        .container { max-width: 1200px; margin: auto; }
         .card { background: var(--card); padding: 20px; border-radius: 12px; border: 1px solid #333; margin-bottom: 20px; }
-        .header-config { display: flex; gap: 15px; align-items: flex-end; }
-        .grid-duelos { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
-        .duelo-card { background: #222; padding: 15px; border-radius: 8px; border: 1px solid #444; position: relative; }
-        .row-mc { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; position: relative; }
-        input, select { background: #000; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 4px; }
-        .nome-mc { flex: 1; text-transform: uppercase; font-weight: bold; }
-        .placar-sel.vencedor { border-color: var(--primary); color: var(--primary); }
-        .placar-sel.perdedor { border-color: var(--error); color: var(--error); }
-        .sugestoes { position: absolute; top: 100%; left: 0; width: 100%; background: #333; border: 1px solid var(--primary); z-index: 100; max-height: 150px; overflow-y: auto; display: none; border-radius: 0 0 5px 5px; }
-        .sugestao-item { padding: 8px; cursor: pointer; font-size: 0.8rem; border-bottom: 1px solid #444; }
+        .header-config { display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; }
+        .grid-duelos { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; margin-top: 15px; }
+        .duelo-card { background: #222; padding: 15px; border-radius: 8px; border: 1px solid #444; }
+        .lado-competidor { background: #111; padding: 10px; border-radius: 6px; margin-bottom: 8px; border: 1px solid #333; }
+        .row-atleta { position: relative; margin-bottom: 5px; }
+        input, select { background: #000; color: #fff; border: 1px solid #444; padding: 8px; border-radius: 4px; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
+        .input-atleta { text-transform: uppercase; font-weight: bold; }
+        
+        .sugestoes-box { 
+            position: absolute; top: 100%; left: 0; width: 100%; background: #333; 
+            border: 1px solid var(--primary); z-index: 1000; max-height: 150px; 
+            overflow-y: auto; display: none; border-radius: 0 0 5px 5px; 
+        }
+        .sugestao-item { padding: 8px; cursor: pointer; font-size: 0.75rem; border-bottom: 1px solid #444; }
         .sugestao-item:hover { background: var(--primary); color: #000; }
-        .resumo-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .resumo-table th, .resumo-table td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
-        button { background: var(--primary); color: #000; border: none; padding: 18px; border-radius: 8px; font-weight: 900; cursor: pointer; text-transform: uppercase; width: 100%; font-size: 1rem; margin-top: 20px; }
-        .fase-title { color: var(--primary); border-left: 4px solid var(--primary); padding-left: 10px; margin: 25px 0 10px 0; text-transform: uppercase; font-size: 0.8rem; font-weight: bold; }
+
+        button { background: var(--primary); color: #fff; border: none; padding: 18px; border-radius: 8px; font-weight: 900; cursor: pointer; text-transform: uppercase; width: 100%; font-size: 1rem; margin-top: 20px; }
+        .fase-title { color: var(--primary); border-left: 4px solid var(--primary); padding-left: 10px; margin: 30px 0 10px 0; text-transform: uppercase; font-size: 0.9rem; font-weight: bold; }
+        .resumo-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85rem; }
+        .resumo-table td { padding: 10px; border-bottom: 1px solid #333; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="card">
-        <h2 style="color:var(--primary)">SÚMULA COMPLETA (RANKING + BRACKET)</h2>
+        <h2 style="color:var(--primary); margin:0 0 15px 0;">SÚMULA CBFL - ADMIN</h2>
         <div class="header-config">
-            <div style="flex:2">
-                <label>Batalha</label><br>
-                <select id="ed-bat" style="width:100%">
-                    <option value="001">SANGUE NA 7</option>
-                    <option value="002">NOVA ERA</option>
-                    <option value="003">COALIZÃO</option>
-                    <option value="004">PICO</option>
-                    <option value="005">BENÇA</option>
-                    <option value="006">EDUCA</option>
-                    <option value="007">ZN</option>
-                    <option value="008">BLACK</option>
-                    <option value="009">MKT</option>
+            <div style="flex:1; min-width:150px"><label>Batalha</label><br>
+                <select id="ed-bat" style="width:100%"><option value="001">SANGUE NA 7</option><option value="002" selected>NOVA ERA</option><option value="003">COALIZÃO</option><option value="004">PICO</option><option value="005">BENÇA</option><option value="006">EDUCA</option><option value="007">ZN</option><option value="008">BLACK</option><option value="009">MKT</option></select>
+            </div>
+            <div style="flex:1; min-width:140px"><label>Data</label><br><input type="date" id="ed-data" style="width:100%"></div>
+            <div style="flex:1; min-width:120px"><label>Chave</label><br>
+                <select id="ed-qtd" onchange="renderizarDuelos()"><option value="16">16 Vagas</option><option value="8">8 Vagas</option></select>
+            </div>
+            <div style="flex:1; min-width:150px"><label>Formato</label><br>
+                <select id="ed-formato" onchange="renderizarDuelos()">
+                    <option value="1">Individual</option>
+                    <option value="2">Duplas (2x2)</option>
+                    <option value="3">Trios (3x3)</option>
+                    <option value="4">Quartetos (4x4)</option>
                 </select>
-            </div>
-            <div style="flex:1">
-                <label>Data</label><br><input type="date" id="ed-data" style="width:100%">
-            </div>
-            <div style="flex:1">
-                <label>Formato</label><br>
-                <select id="ed-formato" onchange="renderizarDuelos()" style="width:100%"><option value="16">16 MCs</option><option value="8">8 MCs</option></select>
             </div>
         </div>
     </div>
+
     <div id="area-duelos"></div>
+
     <div class="card">
-        <h2 style="color:var(--primary)">CONFERIR ANTES DE SALVAR</h2>
-        <table class="resumo-table">
-            <thead><tr><th>MC</th><th>FASE</th><th>2x0</th><th>PONTOS</th><th>MEDALHA</th></tr></thead>
-            <tbody id="corpo-resumo"></tbody>
-        </table>
-        <button onclick="enviarTudo()">🚀 PUBLICAR TUDO NO SITE</button>
+        <h3 style="color:var(--primary)">CONFERÊNCIA DE PONTOS INDIVIDUAIS</h3>
+        <table class="resumo-table"><tbody id="corpo-resumo"></tbody></table>
+        <button onclick="enviarTudo()">🚀 PUBLICAR EDIÇÃO E ATUALIZAR RANKING</button>
     </div>
 </div>
+
 <script>
     const SB_URL = "https://izeayydapmwtnevkzfhm.supabase.co";
     const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml6ZWF5eWRhcG13dG5ldmt6ZmhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NDE1NDUsImV4cCI6MjA4NTAxNzU0NX0.wSkyGzqFny606kpwvrg47-sZFP4v_62ozW2Np8EG90A";
     const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
-    let listaMcsConhecidos = new Set();
+    
+    let listaMcsCadastrados = [];
     const PONTOS_FASE = { "oit": 1, "qua": 2, "sem": 5, "fin_perdeu": 7, "fin_venceu": 10 };
 
     async function carregarMcs() {
         const { data } = await supabaseClient.from('ranking_geral').select('mc_nome');
-        if(data) data.forEach(p => listaMcsConhecidos.add(p.mc_nome.toUpperCase()));
+        if(data) listaMcsCadastrados = data.map(m => m.mc_nome.toUpperCase());
+    }
+
+    function mostrarSugestoes(input) {
+        const valor = input.value.toUpperCase();
+        const box = input.nextElementSibling;
+        box.innerHTML = "";
+        if(!valor) { box.style.display = "none"; return; }
+        const filtrados = listaMcsCadastrados.filter(m => m.includes(valor)).slice(0, 5);
+        if(filtrados.length > 0) {
+            box.style.display = "block";
+            filtrados.forEach(nome => {
+                const div = document.createElement('div');
+                div.className = "sugestao-item";
+                div.innerText = nome;
+                div.onclick = () => { input.value = nome; box.style.display = "none"; calcularRanking(); };
+                box.appendChild(div);
+            });
+        } else { box.style.display = "none"; }
     }
 
     function renderizarDuelos() {
-        const formato = document.getElementById('ed-formato').value;
+        const qtdVagas = parseInt(document.getElementById('ed-qtd').value);
+        const numIntegrantes = parseInt(document.getElementById('ed-formato').value);
         const area = document.getElementById('area-duelos');
         area.innerHTML = "";
-        const fases = formato == "16" ? ["oit", "qua", "sem", "fin"] : ["qua", "sem", "fin"];
-        const qtdDuelos = { oit: 8, qua: 4, sem: 2, fin: 1 };
+        const fases = qtdVagas === 16 ? ["oit", "qua", "sem", "fin"] : ["qua", "sem", "fin"];
+        const qtdPorFase = { oit: 8, qua: 4, sem: 2, fin: 1 };
         const nomesFases = { oit: "Oitavas", qua: "Quartas", sem: "Semi", fin: "Final" };
+
         fases.forEach(f => {
             let html = `<div class="fase-title">${nomesFases[f]}</div><div class="grid-duelos">`;
-            for (let i = 0; i < qtdDuelos[f]; i++) {
-                html += `
-                <div class="duelo-card">
-                    <div class="row-mc">
-                        <input type="text" class="nome-mc" id="${f}_mc_${i*2}" oninput="mostrarSugestoes(this)" placeholder="MC 1">
-                        <div class="sugestoes"></div>
-                        <select class="placar-sel vencedor" id="${f}_p_${i*2}" onchange="atualizarEstiloSelect(this); calcularRanking()">
-                            <option value="V" selected>VITÓRIA</option><option value="0">DERROTA</option>
-                        </select>
-                    </div>
-                    <div class="row-mc">
-                        <input type="text" class="nome-mc" id="${f}_mc_${i*2+1}" oninput="mostrarSugestoes(this)" placeholder="MC 2">
-                        <div class="sugestoes"></div>
-                        <select class="placar-sel perdedor" id="${f}_p_${i*2+1}" onchange="atualizarEstiloSelect(this); calcularRanking()">
-                            <option value="V">VITÓRIA</option><option value="0" selected>DERROTA</option>
-                        </select>
-                    </div>
-                    <select id="${f}_tipo_${i}" onchange="calcularRanking()" style="width:100%; font-size:0.7rem;">
-                        <option value="2x1">2x1</option><option value="2x0">2x0</option><option value="1x0">1x0</option>
-                    </select>
-                </div>`;
+            for (let i = 0; i < qtdPorFase[f]; i++) {
+                html += `<div class="duelo-card">`;
+                for (let lado = 0; lado < 2; lado++) {
+                    const idBase = `${f}_d${i}_l${lado}`;
+                    html += `<div class="lado-competidor">`;
+                    for (let n = 0; n < numIntegrantes; n++) {
+                        html += `<div class="row-atleta"><input type="text" class="input-atleta" id="${idBase}_mc${n}" placeholder="Atleta ${n+1}" oninput="mostrarSugestoes(this); calcularRanking()" onblur="setTimeout(()=>this.nextElementSibling.style.display='none', 200)"><div class="sugestoes-box"></div></div>`;
+                    }
+                    html += `<select id="${idBase}_result" onchange="forcarVencedor('${f}',${i},${lado}); calcularRanking()"><option value="D">DERROTA</option><option value="V" ${lado===0?'selected':''}>VITÓRIA</option></select></div>`;
+                    if(lado===0) html += `<div style="text-align:center; font-size:0.6rem; color:#555; margin:2px 0;">VS</div>`;
+                }
+                html += `<select id="${f}_d${i}_tipo" onchange="calcularRanking()" style="width:100%; margin-top:5px; background:#111"><option value="2x1">2x1</option><option value="2x0">2x0 (TWO LALA)</option><option value="1x0">1x0</option></select></div>`;
             }
             area.innerHTML += html + `</div>`;
         });
         calcularRanking();
     }
 
-    function atualizarEstiloSelect(sel) {
-        if(sel.value === "V") { sel.classList.add('vencedor'); sel.classList.remove('perdedor'); }
-        else { sel.classList.add('perdedor'); sel.classList.remove('vencedor'); }
-    }
-
-    function mostrarSugestoes(input) {
-        const valor = input.value.toUpperCase();
-        const listaDiv = input.nextElementSibling;
-        listaDiv.innerHTML = "";
-        if(!valor) { listaDiv.style.display = "none"; return; }
-        const filtrados = Array.from(listaMcsConhecidos).filter(nome => nome.includes(valor));
-        if(filtrados.length > 0) {
-            filtrados.forEach(nome => {
-                const item = document.createElement('div'); item.className = 'sugestao-item'; item.textContent = nome;
-                item.onclick = () => { input.value = nome; listaDiv.style.display = "none"; calcularRanking(); };
-                listaDiv.appendChild(item);
-            });
-            listaDiv.style.display = "block";
-        } else { listaDiv.style.display = "none"; }
-        calcularRanking();
+    function forcarVencedor(f, d, l) {
+        const outro = l === 0 ? 1 : 0;
+        document.getElementById(`${f}_d${d}_l${outro}_result`).value = "D";
     }
 
     function calcularRanking() {
         const resumo = {};
-        const bracketData = { oitavas: [], quartas: [], semi: [], final: [] };
-        const placaresJson = {};
-        let campeaoFinal = "VAGO";
-        ["oit", "qua", "sem", "fin"].forEach(f => {
-            const qtd = f=="oit"?8 : f=="qua"?4 : f=="sem"?2 : 1;
-            const faseKey = f=="oit"?"oitavas":f=="qua"?"quartas":f=="sem"?"semi":"final";
-            for(let i=0; i<qtd; i++) {
-                const n1 = document.getElementById(`${f}_mc_${i*2}`)?.value.toUpperCase().trim() || "-";
-                const n2 = document.getElementById(`${f}_mc_${i*2+1}`)?.value.toUpperCase().trim() || "-";
-                const p1 = document.getElementById(`${f}_p_${i*2}`)?.value;
-                const p2 = document.getElementById(`${f}_p_${i*2+1}`)?.value;
-                const tipo = document.getElementById(`${f}_tipo_${i}`)?.value;
-                bracketData[faseKey].push(n1, n2);
-                
-                if (tipo === "2x0") { placaresJson[`${f}_${i*2}`] = (p1==="V"?2:0); placaresJson[`${f}_${i*2+1}`] = (p2==="V"?2:0); }
-                else if (tipo === "1x0") { placaresJson[`${f}_${i*2}`] = (p1==="V"?1:0); placaresJson[`${f}_${i*2+1}`] = (p2==="V"?1:0); }
-                else { placaresJson[`${f}_${i*2}`] = (p1==="V"?2:1); placaresJson[`${f}_${i*2+1}`] = (p2==="V"?2:1); }
+        const qtdVagas = parseInt(document.getElementById('ed-qtd').value);
+        const numIntegrantes = parseInt(document.getElementById('ed-formato').value);
+        const fases = qtdVagas === 16 ? ["oit", "qua", "sem", "fin"] : ["qua", "sem", "fin"];
 
-                if(n1 !== "-" && n1 !== "") if(!resumo[n1]) resumo[n1] = { fase: "oit", twolalas: 0, folha: 0 };
-                if(n2 !== "-" && n2 !== "") if(!resumo[n2]) resumo[n2] = { fase: "oit", twolalas: 0, folha: 0 };
-
-                if(p1 === "V" && resumo[n1]) {
-                    if(f==="oit") resumo[n1].fase="qua"; else if(f==="qua") resumo[n1].fase="sem"; else if(f==="sem") resumo[n1].fase="fin_perdeu"; else if(f==="fin") { resumo[n1].fase="fin_venceu"; resumo[n1].folha=1; campeaoFinal = n1; }
-                    if(tipo==="2x0") resumo[n1].twolalas++;
-                }
-                if(p2 === "V" && resumo[n2]) {
-                    if(f==="oit") resumo[n2].fase="qua"; else if(f==="qua") resumo[n2].fase="sem"; else if(f==="sem") resumo[n2].fase="fin_perdeu"; else if(f==="fin") { resumo[n2].fase="fin_venceu"; resumo[n2].folha=1; campeaoFinal = n2; }
-                    if(tipo==="2x0") resumo[n2].twolalas++;
+        fases.forEach(f => {
+            const qtdD = f=="oit"?8 : f=="qua"?4 : f=="sem"?2 : 1;
+            for(let i=0; i<qtdD; i++) {
+                for(let lado=0; lado<2; lado++) {
+                    const res = document.getElementById(`${f}_d${i}_l${lado}_result`).value;
+                    const tipo = document.getElementById(`${f}_d${i}_tipo`).value;
+                    for(let n=0; n<numIntegrantes; n++){
+                        const nome = document.getElementById(`${f}_d${i}_l${lado}_mc${n}`).value.toUpperCase().trim();
+                        if(nome && nome !== "-") {
+                            if(!resumo[nome]) resumo[nome] = { fase: "oit", twolalas: 0, folha: 0 };
+                            if(res === "V") {
+                                if(f==="oit") resumo[nome].fase="qua";
+                                else if(f==="qua") resumo[nome].fase="sem";
+                                else if(f==="sem") resumo[nome].fase="fin_perdeu";
+                                else if(f==="fin") { resumo[nome].fase="fin_venceu"; resumo[nome].folha=1; }
+                                if(tipo==="2x0") resumo[nome].twolalas++;
+                            }
+                        }
+                    }
                 }
             }
         });
         const corpo = document.getElementById('corpo-resumo');
-        corpo.innerHTML = "";
-        Object.keys(resumo).forEach(nome => {
-            const d = resumo[nome];
-            const total = (PONTOS_FASE[d.fase] || 0) + d.twolalas;
-            corpo.innerHTML += `<tr><td><b>${nome}</b></td><td>${d.fase.replace('fin_perdeu','FINALISTA').replace('fin_venceu','CAMPEÃO').toUpperCase()}</td><td>${d.twolalas}</td><td>${total}</td><td>${d.folha?'🏆':'-'}</td></tr>`;
-            resumo[nome].total = total;
-        });
-        return { resumo, bracketData, placaresJson, campeaoFinal };
+        corpo.innerHTML = Object.keys(resumo).sort().map(n => {
+            const p = resumo[n]; const total = (PONTOS_FASE[p.fase]||0) + p.twolalas;
+            return `<tr><td><b>${n}</b></td><td>${p.fase.toUpperCase()}</td><td>${p.twolalas} 2L</td><td>${total} PTS</td></tr>`;
+        }).join('');
+        return resumo;
     }
 
     async function enviarTudo() {
-        const { resumo, bracketData, placaresJson, campeaoFinal } = calcularRanking();
         const batId = document.getElementById('ed-bat').value;
         const dataEd = document.getElementById('ed-data').value;
-        if(!dataEd) return alert("Selecione a data!");
-        const dadosRanking = Object.keys(resumo).map(nome => ({
-            mc_nome: nome, batalha_id: batId, pontos: resumo[nome].total, twolalas: resumo[nome].twolalas, folhinhas: resumo[nome].folha
+        const numInteg = parseInt(document.getElementById('ed-formato').value);
+        const qtdVagas = parseInt(document.getElementById('ed-qtd').value);
+        if (!dataEd) return alert("Selecione a data!");
+
+        const resumoFinal = calcularRanking();
+        const bracket = { oitavas: [], quartas: [], semi: [], final: [] };
+        const placares = {};
+        let campeaoFinalStr = "";
+        const fases = qtdVagas === 16 ? ["oit", "qua", "sem", "fin"] : ["qua", "sem", "fin"];
+
+        fases.forEach(f => {
+            const qtdD = f == "oit" ? 8 : f == "qua" ? 4 : f == "sem" ? 2 : 1;
+            const faseKey = f == "oit" ? "oitavas" : f == "qua" ? "quartas" : f == "sem" ? "semi" : "final";
+            for (let i = 0; i < qtdD; i++) {
+                let n0 = [], n1 = [];
+                for (let n = 0; n < numInteg; n++) {
+                    const m0 = document.getElementById(`${f}_d${i}_l0_mc${n}`).value.toUpperCase().trim();
+                    const m1 = document.getElementById(`${f}_d${i}_l1_mc${n}`).value.toUpperCase().trim();
+                    if(m0) n0.push(m0); if(m1) n1.push(m1);
+                }
+                const s0 = n0.join(" / ") || "-"; const s1 = n1.join(" / ") || "-";
+                bracket[faseKey].push(s0, s1);
+                const r0 = document.getElementById(`${f}_d${i}_l0_result`).value;
+                const tipo = document.getElementById(`${f}_d${i}_tipo`).value;
+                placares[`${f}_${i*2}`] = (r0==="V"?(tipo==="2x0"?2:1):(tipo==="2x1"?1:0));
+                placares[`${f}_${i*2+1}`] = (r0==="D"?(tipo==="2x0"?2:1):(tipo==="2x1"?1:0));
+                if(f==="fin") campeaoFinalStr = (r0==="V" ? s0 : s1);
+            }
+        });
+
+        const participacoes = Object.keys(resumoFinal).map(nome => ({
+            mc_nome: nome, batalha_id: batId, pontos: (PONTOS_FASE[resumoFinal[nome].fase] || 0) + resumoFinal[nome].twolalas, twolalas: resumoFinal[nome].twolalas, folhinhas: resumoFinal[nome].folha
         }));
-        const { error: errEd } = await supabaseClient.from('edicoes').insert([{ batalha_id: batId, data_edicao: dataEd, campeao: campeaoFinal, bracket_json: bracketData, placares_json: placaresJson }]);
-        const { error: errRank } = await supabaseClient.from('participacoes').insert(dadosRanking);
-        if(errEd || errRank) alert("Erro ao salvar! Veja o console.");
-        else { alert("MARCHA! Dados salvos."); location.reload(); }
+
+        const { error: e1 } = await supabaseClient.from('edicoes').insert([{ batalha_id: batId, data_edicao: dataEd, campeao: campeaoFinalStr, bracket_json: bracket, placares_json: placares }]);
+        const { error: e2 } = await supabaseClient.from('participacoes').insert(participacoes);
+
+        if (e1 || e2) alert("Erro ao salvar!");
+        else { alert("PUBLICADO COM SUCESSO!"); location.reload(); }
     }
+
     document.addEventListener('DOMContentLoaded', () => { carregarMcs(); renderizarDuelos(); });
 </script>
 </body>
