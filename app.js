@@ -8,6 +8,13 @@ const mapaBatalhas = {
     "007": { nome: "ZN" }, "008": { nome: "BLACK" }, "009": { nome: "MKT" }
 };
 
+// Função para tratar as datas sem erro de fuso horário
+function formatarDataBR(dataStr) {
+    if (!dataStr) return "";
+    const partes = dataStr.split('T')[0].split('-'); // Pega apenas YYYY-MM-DD
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
 function getFotoUrl(nome) {
     if (!nome || nome === '-' || nome === 'VAGO') return 'img/mc_default.png';
     const slug = nome.toLowerCase().trim().replace(/\s+/g, '_');
@@ -16,21 +23,18 @@ function getFotoUrl(nome) {
 
 async function gerarRanking() {
     try {
-        // Busca o ranking e as últimas edições para saber quem ganhou o quê
         const { data: ordenado, error } = await supabaseClient.from('ranking_geral').select('*');
-        const { data: edições } = await supabaseClient.from('edicoes').select('campeao, batalha_id').order('data_edicao', { ascending: false });
+        const { data: edicoes } = await supabaseClient.from('edicoes').select('campeao, batalha_id').order('data_edicao', { ascending: false });
 
         if (error) throw error;
 
         const corpo = document.getElementById('corpo-ranking');
         if (corpo && ordenado) {
             corpo.innerHTML = ordenado.map((item, i) => {
-                
                 let badgeHtml = "";
                 if (item.total_folhinhas > 0) {
-                    // Descobre qual foi a última batalha que este MC ganhou
-                    const ultimaVitoria = edições?.find(ed => ed.campeao && ed.campeao.toUpperCase().includes(item.mc_nome.toUpperCase()));
-                    const logoId = ultimaVitoria ? ultimaVitoria.batalha_id : "002"; // Fallback para 002 se não achar
+                    const ultimaVitoria = edicoes?.find(ed => ed.campeao && ed.campeao.toUpperCase().includes(item.mc_nome.toUpperCase()));
+                    const logoId = ultimaVitoria ? ultimaVitoria.batalha_id : "002";
 
                     const multiplicador = item.total_folhinhas > 1 ? 
                         `<span style="color:#fff; background:var(--primary); font-size:0.75rem; font-weight:900; padding:2px 6px; border-radius:10px; margin-left:-12px; z-index:2; border:1px solid #000; font-family:sans-serif;">${item.total_folhinhas}x</span>` : "";
@@ -39,8 +43,7 @@ async function gerarRanking() {
                         <div style="display:flex; align-items:center; margin-top:6px; position:relative;">
                             <img src="img/bat${logoId}.png" onerror="this.src='img/bat002.png'" style="width:36px; height:36px; border-radius:50%; border:2px solid var(--primary); object-fit:cover; background:#000;">
                             ${multiplicador}
-                        </div>
-                    `;
+                        </div>`;
                 }
 
                 return `
@@ -72,7 +75,14 @@ async function gerarStories() {
     try {
         const { data: eds } = await supabaseClient.from('edicoes').select('batalha_id, data_edicao').order('data_edicao', { ascending: false });
         const ultimas = {};
-        if(eds) eds.forEach(e => { if(!ultimas[e.batalha_id]) ultimas[e.batalha_id] = new Date(e.data_edicao).getTime(); });
+        if(eds) {
+            eds.forEach(e => { 
+                if(!ultimas[e.batalha_id]) {
+                    // Aqui transformamos a data em timestamp numérico para ordenar os stories corretamente
+                    ultimas[e.batalha_id] = new Date(e.data_edicao.replace(/-/g, '/')).getTime(); 
+                }
+            });
+        }
         const ids = Object.keys(mapaBatalhas).sort((a,b) => (ultimas[b]||0) - (ultimas[a]||0));
         ids.forEach((id, i) => {
             const h = `<div class="item-batalha-lateral" onclick="escolherEdicao('${id}')"><img src="img/bat${id}.png" onerror="this.src='img/cbfl.png'"><span>${mapaBatalhas[id].nome}</span></div>`;
@@ -85,25 +95,74 @@ async function escolherEdicao(idBat) {
     const { data: eds } = await supabaseClient.from('edicoes').select('id, data_edicao').eq('batalha_id', idBat).order('data_edicao',{ascending:false});
     if(!eds?.length) return alert("Sem edições.");
     const m = document.createElement('div'); m.className='modal-bracket';
-    m.innerHTML = `<span class="close" onclick="this.parentElement.remove()">&times;</span><div class="modal-content" style="max-width:400px;margin:auto;"><h3 style="color:var(--primary);text-align:center;font-family:'Black Ops One';">EDIÇÕES</h3>${eds.map(ed=>`<button onclick="this.parentElement.parentElement.remove();abrirBracket('${ed.id}',true)" class="btn-data">${new Date(ed.data_edicao).toLocaleDateString('pt-BR')}</button>`).join('')}</div>`;
+    m.innerHTML = `
+        <span class="close" onclick="this.parentElement.remove()">&times;</span>
+        <div class="modal-content" style="max-width:400px;margin:auto;">
+            <h3 style="color:var(--primary);text-align:center;font-family:'Black Ops One';">EDIÇÕES</h3>
+            ${eds.map(ed => `
+                <button onclick="this.parentElement.parentElement.remove();abrirBracket('${ed.id}',true)" class="btn-data">
+                    ${formatarDataBR(ed.data_edicao)}
+                </button>
+            `).join('')}
+        </div>`;
     document.body.appendChild(m);
 }
 
 async function abrirBracket(id, ehId=false) {
     let q = supabaseClient.from('edicoes').select('*');
     if(ehId) q=q.eq('id',id); else q=q.eq('batalha_id',id).order('data_edicao',{ascending:false}).limit(1);
-    const {data} = await q; if(!data.length) return;
+    const {data} = await q; if(!data || !data.length) return;
     const ed=data[0], b=ed.bracket_json, p=ed.placares_json, camp=(ed.campeao||"-").toUpperCase();
+
     const renderF = (lista, pre, tit) => {
         if(!lista?.length) return "";
         let h = `<div class="v-round"><h4>${tit}</h4>`;
         for(let i=0; i<lista.length; i+=2) {
-            h += `<div class="matchup"><div class="v-mc-card"><div><img src="${getFotoUrl(lista[i])}" class="v-foto-mini" onerror="this.src='img/mc_default.png'"> <span class="v-nome">${lista[i]}</span></div><span class="v-placar">${p[pre+'_'+i]||0}</span></div><div class="v-mc-card"><div><img src="${getFotoUrl(lista[i+1])}" class="v-foto-mini" onerror="this.src='img/mc_default.png'"><span class="v-nome">${lista[i+1]}</span></div><span class="v-placar">${p[pre+'_'+(i+1)]||0}</span></div></div>`;
+            h += `
+                <div class="matchup">
+                    <div class="v-mc-card">
+                        <div>
+                            <img src="${getFotoUrl(lista[i])}" class="v-foto-mini" onerror="this.src='img/mc_default.png'">
+                            <span class="v-nome">${lista[i]}</span>
+                        </div>
+                        <span class="v-placar">${p[pre+'_'+i]||0}</span>
+                    </div>
+                    <div class="v-mc-card">
+                        <div>
+                            <img src="${getFotoUrl(lista[i+1])}" class="v-foto-mini" onerror="this.src='img/mc_default.png'">
+                            <span class="v-nome">${lista[i+1]}</span>
+                        </div>
+                        <span class="v-placar">${p[pre+'_'+(i+1)]||0}</span>
+                    </div>
+                </div>`;
         }
         return h + `</div>`;
     };
+
     const m = document.createElement('div'); m.className='modal-bracket';
-    m.innerHTML = `<span class="close" onclick="this.parentElement.remove()">&times;</span><div class="modal-content"><div class="bracket-view">${renderF(b.oitavas,'oit','OITAVAS')}${renderF(b.quartas,'qua','QUARTAS')}${renderF(b.semi,'sem','SEMI')}${renderF(b.final,'fin','FINAL')}<div class="v-round"><h4>🏆 CAMPEÃO</h4><div class="v-mc-card" style="border-color:var(--primary)"><div><img src="${getFotoUrl(camp)}" class="v-foto-mini" onerror="this.src='img/mc_default.png'"><span class="v-nome" style="color:var(--primary)">${camp}</span></div></div></div></div></div>`;
+    m.innerHTML = `
+        <span class="close" onclick="this.parentElement.remove()">&times;</span>
+        <div class="modal-content">
+            <div style="text-align:center; margin-bottom:15px;">
+                <h2 style="color:var(--primary);margin:0;">${mapaBatalhas[ed.batalha_id].nome}</h2>
+                <small>${formatarDataBR(ed.data_edicao)}</small>
+            </div>
+            <div class="bracket-view">
+                ${renderF(b.oitavas,'oit','OITAVAS')}
+                ${renderF(b.quartas,'qua','QUARTAS')}
+                ${renderF(b.semi,'sem','SEMI')}
+                ${renderF(b.final,'fin','FINAL')}
+                <div class="v-round">
+                    <h4>🏆 CAMPEÃO</h4>
+                    <div class="v-mc-card" style="border-color:var(--primary)">
+                        <div>
+                            <img src="${getFotoUrl(camp)}" class="v-foto-mini" onerror="this.src='img/mc_default.png'">
+                            <span class="v-nome" style="color:var(--primary)">${camp}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
     document.body.appendChild(m);
 }
 
