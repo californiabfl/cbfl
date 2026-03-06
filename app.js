@@ -8,7 +8,6 @@ const mapaBatalhas = {
     "007": { nome: "ZN" }, "008": { nome: "BLACK" }, "009": { nome: "MKT" }
 };
 
-// Formatação de data sem erro de fuso horário
 function formatarDataBR(dataStr) {
     if (!dataStr) return "";
     const partes = dataStr.split('T')[0].split('-');
@@ -28,13 +27,9 @@ async function gerarRanking() {
 
         if (error) throw error;
 
-        // --- LÓGICA DE ORDENAÇÃO COM DESEMPATE ---
         const ordenado = rawData.sort((a, b) => {
-            // 1º Critério: Pontos
             if (b.total_pontos !== a.total_pontos) return b.total_pontos - a.total_pontos;
-            // 2º Critério: Folhinhas (Títulos)
             if (b.total_folhinhas !== a.total_folhinhas) return b.total_folhinhas - a.total_folhinhas;
-            // 3º Critério: Two Lalás
             return b.total_twolalas - a.total_twolalas;
         });
 
@@ -44,24 +39,35 @@ async function gerarRanking() {
                 
                 let badgeHtml = "";
                 if (item.total_folhinhas > 0) {
-                    const vitoriasDoMC = edicoes?.filter(ed => 
+                    // Filtra vitórias e agrupa por batalha_id
+                    const vitorias = edicoes?.filter(ed => 
                         ed.campeao && ed.campeao.toUpperCase().includes(item.mc_nome.toUpperCase())
                     ) || [];
 
-                    const logosHtml = vitoriasDoMC.map((vitoria, idx) => `
-                        <img src="img/bat${vitoria.batalha_id}.png" 
-                             onerror="this.src='img/bat002.png'" 
-                             title="${mapaBatalhas[vitoria.batalha_id]?.nome || 'Campeão'}"
-                             style="width:30px; height:30px; border-radius:50%; border:2px solid var(--primary); 
-                                    object-fit:cover; background:#000; margin-right:-10px; position:relative; 
-                                    z-index:${10 - idx}; box-shadow: 2px 0 5px rgba(0,0,0,0.5);">
-                    `).join('');
+                    const agrupado = {};
+                    vitorias.forEach(v => {
+                        agrupado[v.batalha_id] = (agrupado[v.batalha_id] || 0) + 1;
+                    });
+
+                    // Gera o HTML das logos com multiplicador
+                    const logosHtml = Object.keys(agrupado).map((bid, idx) => {
+                        const qtd = agrupado[bid];
+                        const multiplicador = qtd > 1 ? `<span style="position:absolute; top:-5px; right:-2px; background:var(--primary); color:#fff; font-size:0.6rem; font-weight:900; padding:1px 4px; border-radius:6px; border:1px solid #000; z-index:20;">${qtd}x</span>` : "";
+                        
+                        return `
+                            <div style="position:relative; margin-right:-8px; z-index:${10 - idx};">
+                                <img src="img/bat${bid}.png" 
+                                     onerror="this.src='img/bat002.png'" 
+                                     title="${mapaBatalhas[bid]?.nome || 'Campeão'}"
+                                     style="width:30px; height:30px; border-radius:50%; border:2px solid var(--primary); 
+                                            object-fit:cover; background:#000; box-shadow: 2px 0 5px rgba(0,0,0,0.5);">
+                                ${multiplicador}
+                            </div>`;
+                    }).join('');
 
                     badgeHtml = `
                         <div style="display:flex; align-items:center; margin-top:8px; padding-left:5px;">
                             ${logosHtml}
-                            ${item.total_folhinhas > vitoriasDoMC.length ? 
-                                `<span style="margin-left:15px; font-size:0.7rem; color:#888;">+${item.total_folhinhas - vitoriasDoMC.length}</span>` : ''}
                         </div>
                     `;
                 }
