@@ -23,11 +23,20 @@ function getFotoUrl(nome) {
 
 async function gerarRanking() {
     try {
-        // Busca o ranking consolidado e todas as edições para cruzar os títulos
-        const { data: ordenado, error } = await supabaseClient.from('ranking_geral').select('*');
+        const { data: rawData, error } = await supabaseClient.from('ranking_geral').select('*');
         const { data: edicoes } = await supabaseClient.from('edicoes').select('campeao, batalha_id').order('data_edicao', { ascending: false });
 
         if (error) throw error;
+
+        // --- LÓGICA DE ORDENAÇÃO COM DESEMPATE ---
+        const ordenado = rawData.sort((a, b) => {
+            // 1º Critério: Pontos
+            if (b.total_pontos !== a.total_pontos) return b.total_pontos - a.total_pontos;
+            // 2º Critério: Folhinhas (Títulos)
+            if (b.total_folhinhas !== a.total_folhinhas) return b.total_folhinhas - a.total_folhinhas;
+            // 3º Critério: Two Lalás
+            return b.total_twolalas - a.total_twolalas;
+        });
 
         const corpo = document.getElementById('corpo-ranking');
         if (corpo && ordenado) {
@@ -35,12 +44,10 @@ async function gerarRanking() {
                 
                 let badgeHtml = "";
                 if (item.total_folhinhas > 0) {
-                    // Filtra todas as batalhas onde esse MC foi campeão
                     const vitoriasDoMC = edicoes?.filter(ed => 
                         ed.campeao && ed.campeao.toUpperCase().includes(item.mc_nome.toUpperCase())
                     ) || [];
 
-                    // Gera o HTML de cada logo (com efeito de sobreposição)
                     const logosHtml = vitoriasDoMC.map((vitoria, idx) => `
                         <img src="img/bat${vitoria.batalha_id}.png" 
                              onerror="this.src='img/bat002.png'" 
